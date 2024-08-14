@@ -15,6 +15,7 @@
   --green: #219653;
   --blue: #2f80ed;
   --red: #eb5757;
+  --yellow: #f2c94c;
   --light-blue: #56ccf2;
   --brown: #4f4f4f;
   --pink: #bb6bd9;
@@ -203,4 +204,36 @@ ul {
 
 .button-home {
   background-color: var(--purple) !important;
+}
+
+/* Document Types */
+
+.button-edit {
+  margin-right: 1rem !important;
+  padding: 0 !important;
+  background-color: transparent !important;
+  border: none !important;
+  cursor: pointer;
+  color: var(--yellow);
+
+  svg {
+    path {
+      fill: var(--yellow);
+    }
+  }
+}
+
+.button-trash {
+  margin-right: 1rem !important;
+  padding: 0 !important;
+  background-color: transparent !important;
+  border: none !important;
+  cursor: pointer;
+  color: var(--red);
+
+  svg {
+    path {
+      fill: var(--red);
+    }
+  }
 }

@@ -6,7 +6,7 @@ import Logo from "../../assets/logo.png";
 
 function NavBar() {
   return (
-    <Navbar expand="lg" className="nav">
+    <Navbar collapseOnSelect expand="lg" className="nav">
       <Container>
         <Navbar.Brand href="/" className="poppins-semibold">
           <img
@@ -18,9 +18,12 @@ function NavBar() {
           />{" "}
           O Guardião
         </Navbar.Brand>
-        <Navbar.Toggle aria-controls="basic-navbar-nav" />
-        <Navbar.Collapse id="basic-navbar-nav">
-          <Nav className="me-auto" style={{ marginLeft: "25%" }}>
+        <Navbar.Toggle aria-controls="responsive-navbar-nav" />
+        <Navbar.Collapse
+          id="responsive-navbar-nav"
+          className="justify-content-end"
+        >
+          <Nav>
             <Nav.Link href="/">Home</Nav.Link>
             <Nav.Link href="tipos-documentais">Tipos Documentais</Nav.Link>
             <Nav.Link href="documentos">Documentos</Nav.Link>
