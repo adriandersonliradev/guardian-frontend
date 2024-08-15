@@ -23,7 +23,7 @@ import { dataDocumetationType } from "../DocumentTypes";
 
 interface FormDataDocuments {
   name: string;
-  fileUpload: string;
+  fileUpload: null;
   documentationType: string;
 }
 
@@ -72,9 +72,15 @@ export function Documents() {
     formData.append("nomeDocumento", values.name);
     formData.append(
       "documentoDTO",
-      `{"tipoDocumentalId": ${values.documentationType}}`
+      JSON.stringify({
+        tipoDocumentalId: values.documentationType,
+      })
     );
-    formData.append("file", values.fileUpload);
+    console.log(values.fileUpload);
+    // @ts-ignore
+    formData.append("file", values.fileUpload[0]);
+
+    console.log("Arquivo enviado:", formData.get("file"));
 
     await api
       .post(`/documentos`, formData, {
@@ -82,7 +88,7 @@ export function Documents() {
           "Content-Type": "multipart/form-data",
         },
       })
-      .then(() => {
+      .then(async () => {
         setToastText([
           "success",
           "O Guardião",
@@ -91,7 +97,8 @@ export function Documents() {
         setLoadingButton(false);
         setModalShow(false);
         setToastShow(true);
-        window.location.reload();
+        const { data } = await api.get("/documentos");
+        setDataDocuments(data);
       })
       .catch((err) => {
         setToastText([
@@ -105,8 +112,24 @@ export function Documents() {
   };
 
   const schema = yup.object().shape({
-    name: yup.string().required("Nome do arquivoobrigatório"),
-    fileUpload: yup.string().required("Selecione um arquivo"),
+    name: yup.string().required("Nome do arquivo obrigatório"),
+    fileUpload: yup
+      .mixed()
+      .required("O arquivo é obrigatório")
+      .test("fileSize", "O arquivo é muito grande", (value) => {
+        if (value) {
+          // @ts-ignore
+          return value[0].size <= 5242880;
+        }
+        return true;
+      })
+      .test("fileType", "O formato do arquivo é inválido", (value) => {
+        if (value) {
+          // @ts-ignore
+          return ["application/pdf"].includes(value[0].type);
+        }
+        return true;
+      }),
     documentationType: yup.string().required("Tipo documental é obrigatório"),
   });
 
@@ -248,11 +271,18 @@ export function Documents() {
                 onSubmit={handleSubmit}
                 initialValues={{
                   name: "",
-                  fileUpload: "",
+                  fileUpload: null as any,
                   documentationType: "",
                 }}
               >
-                {({ handleSubmit, handleChange, values, touched, errors }) => (
+                {({
+                  setFieldValue,
+                  handleSubmit,
+                  handleChange,
+                  values,
+                  touched,
+                  errors,
+                }) => (
                   <Form noValidate onSubmit={handleSubmit}>
                     <Modal.Body>
                       <Form.Group
@@ -280,7 +310,13 @@ export function Documents() {
                           type="file"
                           name="fileUpload"
                           accept=".pdf"
-                          onChange={handleChange}
+                          onChange={(event) => {
+                            setFieldValue(
+                              "fileUpload",
+                              // @ts-ignore
+                              event.currentTarget.files
+                            );
+                          }}
                           isInvalid={touched.fileUpload && !!errors.fileUpload}
                         />
                         <Form.Control.Feedback type="invalid">
@@ -301,8 +337,16 @@ export function Documents() {
                           }
                         >
                           <option>Selecione uma opção</option>
-                          <option value="Ativo">Ativo</option>
-                          <option value="Inativo">Inativo</option>
+                          {dataDocumentationTypes
+                            .filter(
+                              (item: dataDocumetationType) =>
+                                item.status === "Ativo"
+                            )
+                            .map((item: dataDocumetationType) => (
+                              <option key={item.id} value={item.id}>
+                                {item.nomeDocumento}
+                              </option>
+                            ))}
                         </Form.Select>
                         <Form.Control.Feedback type="invalid">
                           {errors.documentationType}

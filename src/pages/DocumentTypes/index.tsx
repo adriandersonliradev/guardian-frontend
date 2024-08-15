@@ -48,7 +48,6 @@ export function DocumentTypes() {
     setLoadingScreen(true);
     const loadData = async () => {
       const { data } = await api.get("/tiposdocumentais");
-      console.log(data);
       setData(data);
     };
 
@@ -75,7 +74,7 @@ export function DocumentTypes() {
 
     await api
       .post(`/tiposdocumentais/1`, data)
-      .then(() => {
+      .then(async () => {
         setToastText([
           "success",
           "O Guardião",
@@ -84,7 +83,8 @@ export function DocumentTypes() {
         setLoadingButton(false);
         setModalShow(false);
         setToastShow(true);
-        window.location.reload();
+        const { data } = await api.get("/tiposdocumentais");
+        setData(data);
       })
       .catch((err) => {
         setToastText([
