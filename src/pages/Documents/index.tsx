@@ -65,22 +65,45 @@ export function Documents() {
     }, 1500);
   }, []);
 
+  const handleDeleteDocument = async (id: number) => {
+    setLoadingScreen(true);
+    await api
+      .delete(`/documentos/${id}`)
+      .then(async () => {
+        setToastText([
+          "success",
+          "O Guardável",
+          "Documento excluído com sucesso!",
+        ]);
+        setLoadingScreen(false);
+        setToastShow(true);
+        const { data } = await api.get("/documentos");
+        setDataDocuments(data);
+      })
+      .catch((err) => {
+        setToastText([
+          "danger",
+          "O Guardável",
+          `Documento não foi excluído!, ${err}`,
+        ]);
+        setLoadingScreen(false);
+        setToastShow(true);
+      });
+  };
+
   const handleSubmit = async (values: FormDataDocuments) => {
     setLoadingButton(true);
 
     const formData = new FormData();
-    formData.append("nomeDocumento", values.name);
     formData.append(
       "documentoDTO",
       JSON.stringify({
+        nomeDocumento: values.name,
         tipoDocumentalId: values.documentationType,
       })
     );
-    console.log(values.fileUpload);
     // @ts-ignore
     formData.append("file", values.fileUpload[0]);
-
-    console.log("Arquivo enviado:", formData.get("file"));
 
     await api
       .post(`/documentos`, formData, {
@@ -239,6 +262,8 @@ export function Documents() {
                                 <FontAwesomeIcon icon={faEdit} />
                               </Button>
                               <Button
+                                key={`delete-${item.id}`}
+                                onClick={() => handleDeleteDocument(item.id)}
                                 className="button-trash justify-content-center align-items-center"
                                 style={{ fontSize: "1.2rem" }}
                               >
