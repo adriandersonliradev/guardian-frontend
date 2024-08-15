@@ -1,4 +1,6 @@
+import { useEffect, useState } from "react";
 import {
+  Badge,
   Button,
   Col,
   Form,
@@ -9,15 +11,14 @@ import {
   Toast,
   ToastContainer,
 } from "react-bootstrap";
-import { NavBar } from "../../components";
-import { useEffect, useState } from "react";
-import * as yup from "yup";
+import { faEdit, faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Formik } from "formik";
+import * as yup from "yup";
+
 import api from "../../services/api";
 
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEdit, faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
-
+import { NavBar } from "../../components";
 import Logo from "../../assets/logo.png";
 
 interface FormDataDocumentTypes {
@@ -27,7 +28,7 @@ interface FormDataDocumentTypes {
   status: string;
 }
 
-interface dataType {
+export interface dataDocumetationType {
   id: number;
   nomeDocumento: string;
   leiRegulamentadora: string;
@@ -55,7 +56,7 @@ export function DocumentTypes() {
 
     setTimeout(() => {
       setLoadingScreen(false);
-    }, 2000);
+    }, 1500);
   }, []);
 
   const handleSubmit = async (values: FormDataDocumentTypes) => {
@@ -83,6 +84,7 @@ export function DocumentTypes() {
         setLoadingButton(false);
         setModalShow(false);
         setToastShow(true);
+        window.location.reload();
       })
       .catch((err) => {
         setToastText([
@@ -134,32 +136,32 @@ export function DocumentTypes() {
         </Toast>
       </ToastContainer>
       <NavBar />
-      {loadingScreen ? (
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            height: "85vh",
-          }}
-        >
-          <Spinner animation="border" variant="primary" />
+      <div className="container">
+        <div className="header">
+          <h1>
+            <span className="poppins-bold">Tipos Documentais</span>
+          </h1>
+          <Button
+            onClick={() => setModalShow(true)}
+            className="button-home justify-content-center align-items-center"
+            style={{ fontSize: "1.2rem" }}
+          >
+            <FontAwesomeIcon icon={faPlus} />
+          </Button>
         </div>
-      ) : (
-        <>
-          <div className="container">
-            <div className="header">
-              <h1>
-                <span className="poppins-bold">Tipos Documentais</span>
-              </h1>
-              <Button
-                onClick={() => setModalShow(true)}
-                className="button-home justify-content-center align-items-center"
-                style={{ fontSize: "1.2rem" }}
-              >
-                <FontAwesomeIcon icon={faPlus} />
-              </Button>
-            </div>
+        {loadingScreen ? (
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              height: "45vh",
+            }}
+          >
+            <Spinner animation="border" variant="primary" />
+          </div>
+        ) : (
+          <>
             <div className="table">
               {data.length === 0 ? (
                 <h6>Nenhum Tipo Documental Cadastrado</h6>
@@ -177,13 +179,19 @@ export function DocumentTypes() {
                       </tr>
                     </thead>
                     <tbody>
-                      {data.map((item: dataType) => (
+                      {data.map((item: dataDocumetationType) => (
                         <tr key={item.id}>
                           <td>{item.id}</td>
                           <td>{item.nomeDocumento}</td>
                           <td>{item.leiRegulamentadora}</td>
                           <td>{item.tempoRetencao}</td>
-                          <td>{item.status}</td>
+                          <td>
+                            {item.status.toLowerCase() === "ativo" ? (
+                              <Badge bg="success">{"Ativo"}</Badge>
+                            ) : (
+                              <Badge bg="danger">{"Inativo"}</Badge>
+                            )}
+                          </td>
                           <td>
                             <Button
                               className="button-edit justify-content-center align-items-center"
@@ -205,130 +213,137 @@ export function DocumentTypes() {
                 </div>
               )}
             </div>
-          </div>
 
-          <Modal
-            show={modalShow}
-            onHide={() => setModalShow(false)}
-            size="md"
-            aria-labelledby="contained-modal-title-vcenter"
-            centered
-          >
-            <Modal.Header closeButton>
-              <Modal.Title id="contained-modal-title-vcenter">
-                Novo Tipo Documental
-              </Modal.Title>
-            </Modal.Header>
-            <Formik
-              validationSchema={schema}
-              onSubmit={handleSubmit}
-              initialValues={{
-                description: "",
-                regulatoryLaw: "",
-                retentionPeriod: 1,
-                status: "",
-              }}
+            <Modal
+              show={modalShow}
+              onHide={() => setModalShow(false)}
+              size="md"
+              aria-labelledby="contained-modal-title-vcenter"
+              centered
             >
-              {({ handleSubmit, handleChange, values, errors }) => (
-                <Form noValidate onSubmit={handleSubmit}>
-                  <Modal.Body>
-                    <Form.Group
-                      as={Col}
-                      className="mb-3"
-                      controlId="description"
-                    >
-                      <Form.Label>Descrição</Form.Label>
-                      <Form.Control
-                        type="text"
-                        name="description"
-                        autoFocus
-                        value={values.description}
-                        onChange={handleChange}
-                        isInvalid={!!errors.description}
-                      />
-                      <Form.Control.Feedback type="invalid">
-                        {errors.description}
-                      </Form.Control.Feedback>
-                    </Form.Group>
-
-                    <Form.Group
-                      className="mb-3"
-                      controlId="exampleForm.ControlInput2"
-                    >
-                      <Form.Label>Lei Regulamentadora</Form.Label>
-                      <Form.Control
-                        type="text"
-                        name="regulatoryLaw"
-                        value={values.regulatoryLaw}
-                        onChange={handleChange}
-                        isInvalid={!!errors.regulatoryLaw}
-                      />
-                      <Form.Control.Feedback type="invalid">
-                        {errors.regulatoryLaw}
-                      </Form.Control.Feedback>
-                    </Form.Group>
-
-                    <Form.Group
-                      className="mb-3"
-                      controlId="exampleForm.ControlInput1"
-                    >
-                      <Form.Label>Tempo de Vigência</Form.Label>
-                      <InputGroup className="mb-3">
-                        <Form.Control
-                          type="number"
-                          placeholder="Digite um número"
-                          name="retentionPeriod"
-                          value={values.retentionPeriod}
-                          onChange={handleChange}
-                          isInvalid={!!errors.retentionPeriod}
-                        />
-                        <InputGroup.Text id="basic-addon2">
-                          {values.retentionPeriod === 1 ? "ano" : "anos"}
-                        </InputGroup.Text>
-                        <Form.Control.Feedback type="invalid">
-                          {errors.retentionPeriod}
-                        </Form.Control.Feedback>
-                      </InputGroup>
-                    </Form.Group>
-
-                    <Form.Group controlId="formSelect" className="mb-3">
-                      <Form.Label>Status</Form.Label>
-                      <Form.Select
-                        aria-label="Status"
-                        name="status"
-                        value={values.status}
-                        onChange={handleChange}
-                        isInvalid={!!errors.status}
+              <Modal.Header closeButton>
+                <Modal.Title id="contained-modal-title-vcenter">
+                  Novo Tipo Documental
+                </Modal.Title>
+              </Modal.Header>
+              <Formik
+                validationSchema={schema}
+                onSubmit={handleSubmit}
+                initialValues={{
+                  description: "",
+                  regulatoryLaw: "",
+                  retentionPeriod: 1,
+                  status: "",
+                }}
+              >
+                {({ handleSubmit, handleChange, values, touched, errors }) => (
+                  <Form noValidate onSubmit={handleSubmit}>
+                    <Modal.Body>
+                      <Form.Group
+                        as={Col}
+                        className="mb-3"
+                        controlId="description"
                       >
-                        <option>Selecione uma opção</option>
-                        <option value="Ativo">Ativo</option>
-                        <option value="Inativo">Inativo</option>
-                      </Form.Select>
-                      <Form.Control.Feedback type="invalid">
-                        {errors.status}
-                      </Form.Control.Feedback>
-                    </Form.Group>
-                  </Modal.Body>
-                  <Modal.Footer>
-                    <Button type="submit" disabled={loadingButton}>
-                      {loadingButton && (
-                        <Spinner
-                          as="span"
-                          animation="border"
-                          size="sm"
-                          role="status"
-                          aria-hidden="true"
+                        <Form.Label>Descrição</Form.Label>
+                        <Form.Control
+                          type="text"
+                          name="description"
+                          autoFocus
+                          value={values.description}
+                          onChange={handleChange}
+                          isInvalid={
+                            touched.description && !!errors.description
+                          }
                         />
-                      )}{" "}
-                      Cadastrar
-                    </Button>
-                  </Modal.Footer>
-                </Form>
-              )}
-            </Formik>
-          </Modal>
-        </>
-      )}
+                        <Form.Control.Feedback type="invalid">
+                          {errors.description}
+                        </Form.Control.Feedback>
+                      </Form.Group>
+
+                      <Form.Group
+                        className="mb-3"
+                        controlId="exampleForm.ControlInput2"
+                      >
+                        <Form.Label>Lei Regulamentadora</Form.Label>
+                        <Form.Control
+                          type="text"
+                          name="regulatoryLaw"
+                          value={values.regulatoryLaw}
+                          onChange={handleChange}
+                          isInvalid={
+                            touched.regulatoryLaw && !!errors.regulatoryLaw
+                          }
+                        />
+                        <Form.Control.Feedback type="invalid">
+                          {errors.regulatoryLaw}
+                        </Form.Control.Feedback>
+                      </Form.Group>
+
+                      <Form.Group
+                        className="mb-3"
+                        controlId="exampleForm.ControlInput1"
+                      >
+                        <Form.Label>Tempo de Vigência</Form.Label>
+                        <InputGroup className="mb-3">
+                          <Form.Control
+                            type="number"
+                            placeholder="Digite um número"
+                            name="retentionPeriod"
+                            value={values.retentionPeriod}
+                            onChange={handleChange}
+                            isInvalid={
+                              touched.retentionPeriod &&
+                              !!errors.retentionPeriod
+                            }
+                          />
+                          <InputGroup.Text id="basic-addon2">
+                            {values.retentionPeriod === 1 ? "ano" : "anos"}
+                          </InputGroup.Text>
+                          <Form.Control.Feedback type="invalid">
+                            {errors.retentionPeriod}
+                          </Form.Control.Feedback>
+                        </InputGroup>
+                      </Form.Group>
+
+                      <Form.Group controlId="formSelect" className="mb-3">
+                        <Form.Label>Status</Form.Label>
+                        <Form.Select
+                          aria-label="Status"
+                          name="status"
+                          value={values.status}
+                          onChange={handleChange}
+                          isInvalid={touched.status && !!errors.status}
+                        >
+                          <option>Selecione uma opção</option>
+                          <option value="Ativo">Ativo</option>
+                          <option value="Inativo">Inativo</option>
+                        </Form.Select>
+                        <Form.Control.Feedback type="invalid">
+                          {errors.status}
+                        </Form.Control.Feedback>
+                      </Form.Group>
+                    </Modal.Body>
+                    <Modal.Footer>
+                      <Button type="submit" disabled={loadingButton}>
+                        {loadingButton && (
+                          <Spinner
+                            as="span"
+                            animation="border"
+                            size="sm"
+                            role="status"
+                            aria-hidden="true"
+                          />
+                        )}{" "}
+                        Cadastrar
+                      </Button>
+                    </Modal.Footer>
+                  </Form>
+                )}
+              </Formik>
+            </Modal>
+          </>
+        )}
+      </div>
     </>
   );
 }
