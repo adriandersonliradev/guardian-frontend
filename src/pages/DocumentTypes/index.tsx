@@ -58,6 +58,32 @@ export function DocumentTypes() {
     }, 1500);
   }, []);
 
+  const handleDeleteDocument = async (id: number) => {
+    setLoadingScreen(true);
+    await api
+      .delete(`/tiposdocumentais/${id}`)
+      .then(async () => {
+        setToastText([
+          "success",
+          "O Guardável",
+          "Tipo Documental excluído com sucesso!",
+        ]);
+        setLoadingScreen(false);
+        setToastShow(true);
+        const { data } = await api.get("/tiposdocumentais");
+        setData(data);
+      })
+      .catch((err) => {
+        setToastText([
+          "danger",
+          "O Guardável",
+          `Tipo Documental não foi excluído!, ${err?.response?.data?.message}`,
+        ]);
+        setLoadingScreen(false);
+        setToastShow(true);
+      });
+  };
+
   const handleSubmit = async (values: FormDataDocumentTypes) => {
     setLoadingButton(true);
 
@@ -87,10 +113,11 @@ export function DocumentTypes() {
         setData(data);
       })
       .catch((err) => {
+        console.log(err);
         setToastText([
           "danger",
           "O Guardião",
-          `Tipo Documental não foi cadastrado!, ${err}`,
+          `Tipo Documental não foi cadastrado! ${err?.response?.data?.message}`,
         ]);
         setLoadingButton(false);
         setToastShow(true);
@@ -200,6 +227,8 @@ export function DocumentTypes() {
                               <FontAwesomeIcon icon={faEdit} />
                             </Button>
                             <Button
+                              key={`delete-${item.id}`}
+                              onClick={() => handleDeleteDocument(item.id)}
                               className="button-trash justify-content-center align-items-center"
                               style={{ fontSize: "1.2rem" }}
                             >

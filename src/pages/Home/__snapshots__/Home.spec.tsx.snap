@@ -1,0 +1,268 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`AboutUs > should render correctly 1`] = `
+{
+  "asFragment": [Function],
+  "baseElement": <body>
+    <div>
+      <nav
+        class="nav navbar navbar-expand-lg navbar-light"
+      >
+        <div
+          class="container"
+        >
+          <a
+            class="poppins-semibold navbar-brand"
+            href="/"
+          >
+            <img
+              alt=""
+              class="d-inline-block"
+              height="60"
+              src="/src/assets/logo.png"
+              width="60"
+            />
+             
+            O Guardião
+          </a>
+          <button
+            aria-controls="responsive-navbar-nav"
+            aria-label="Toggle navigation"
+            class="navbar-toggler collapsed"
+            type="button"
+          >
+            <span
+              class="navbar-toggler-icon"
+            />
+          </button>
+          <div
+            class="justify-content-end navbar-collapse collapse"
+            id="responsive-navbar-nav"
+          >
+            <div
+              class="navbar-nav"
+            >
+              <a
+                class="nav-link"
+                data-rr-ui-event-key="/"
+                href="/"
+              >
+                Home
+              </a>
+              <a
+                class="nav-link"
+                data-rr-ui-event-key="tipos-documentais"
+                href="tipos-documentais"
+              >
+                Tipos Documentais
+              </a>
+              <a
+                class="nav-link"
+                data-rr-ui-event-key="documentos"
+                href="documentos"
+              >
+                Documentos
+              </a>
+              <a
+                class="nav-link"
+                data-rr-ui-event-key="sobre-nos"
+                href="sobre-nos"
+              >
+                Sobre nós
+              </a>
+            </div>
+          </div>
+        </div>
+      </nav>
+      <div
+        style="display: flex; justify-content: space-around; height: 85vh; align-items: center;"
+      >
+        <div
+          style="display: flex; flex-direction: column; width: 25%;"
+        >
+          <h1>
+            <span
+              class="poppins-bold"
+            >
+              Guardião de Documentos
+            </span>
+          </h1>
+          <span
+            class="poppins-light"
+            style="margin-top: 1rem;"
+          >
+            Guarde seus documentos de maneira segura e sem reter documentos não importantes com sua própria tabela de temporalidade
+          </span>
+          <button
+            class="button-home btn btn-primary"
+            style="width: 15rem; margin-top: 2rem;"
+            type="button"
+          >
+            Registre-se agora
+          </button>
+        </div>
+        <img
+          alt="Guardiao de Documentos"
+          src="/src/assets/guardiaoDeDocumentos.png"
+          width="30%"
+        />
+      </div>
+    </div>
+  </body>,
+  "container": <div>
+    <nav
+      class="nav navbar navbar-expand-lg navbar-light"
+    >
+      <div
+        class="container"
+      >
+        <a
+          class="poppins-semibold navbar-brand"
+          href="/"
+        >
+          <img
+            alt=""
+            class="d-inline-block"
+            height="60"
+            src="/src/assets/logo.png"
+            width="60"
+          />
+           
+          O Guardião
+        </a>
+        <button
+          aria-controls="responsive-navbar-nav"
+          aria-label="Toggle navigation"
+          class="navbar-toggler collapsed"
+          type="button"
+        >
+          <span
+            class="navbar-toggler-icon"
+          />
+        </button>
+        <div
+          class="justify-content-end navbar-collapse collapse"
+          id="responsive-navbar-nav"
+        >
+          <div
+            class="navbar-nav"
+          >
+            <a
+              class="nav-link"
+              data-rr-ui-event-key="/"
+              href="/"
+            >
+              Home
+            </a>
+            <a
+              class="nav-link"
+              data-rr-ui-event-key="tipos-documentais"
+              href="tipos-documentais"
+            >
+              Tipos Documentais
+            </a>
+            <a
+              class="nav-link"
+              data-rr-ui-event-key="documentos"
+              href="documentos"
+            >
+              Documentos
+            </a>
+            <a
+              class="nav-link"
+              data-rr-ui-event-key="sobre-nos"
+              href="sobre-nos"
+            >
+              Sobre nós
+            </a>
+          </div>
+        </div>
+      </div>
+    </nav>
+    <div
+      style="display: flex; justify-content: space-around; height: 85vh; align-items: center;"
+    >
+      <div
+        style="display: flex; flex-direction: column; width: 25%;"
+      >
+        <h1>
+          <span
+            class="poppins-bold"
+          >
+            Guardião de Documentos
+          </span>
+        </h1>
+        <span
+          class="poppins-light"
+          style="margin-top: 1rem;"
+        >
+          Guarde seus documentos de maneira segura e sem reter documentos não importantes com sua própria tabela de temporalidade
+        </span>
+        <button
+          class="button-home btn btn-primary"
+          style="width: 15rem; margin-top: 2rem;"
+          type="button"
+        >
+          Registre-se agora
+        </button>
+      </div>
+      <img
+        alt="Guardiao de Documentos"
+        src="/src/assets/guardiaoDeDocumentos.png"
+        width="30%"
+      />
+    </div>
+  </div>,
+  "debug": [Function],
+  "findAllByAltText": [Function],
+  "findAllByDisplayValue": [Function],
+  "findAllByLabelText": [Function],
+  "findAllByPlaceholderText": [Function],
+  "findAllByRole": [Function],
+  "findAllByTestId": [Function],
+  "findAllByText": [Function],
+  "findAllByTitle": [Function],
+  "findByAltText": [Function],
+  "findByDisplayValue": [Function],
+  "findByLabelText": [Function],
+  "findByPlaceholderText": [Function],
+  "findByRole": [Function],
+  "findByTestId": [Function],
+  "findByText": [Function],
+  "findByTitle": [Function],
+  "getAllByAltText": [Function],
+  "getAllByDisplayValue": [Function],
+  "getAllByLabelText": [Function],
+  "getAllByPlaceholderText": [Function],
+  "getAllByRole": [Function],
+  "getAllByTestId": [Function],
+  "getAllByText": [Function],
+  "getAllByTitle": [Function],
+  "getByAltText": [Function],
+  "getByDisplayValue": [Function],
+  "getByLabelText": [Function],
+  "getByPlaceholderText": [Function],
+  "getByRole": [Function],
+  "getByTestId": [Function],
+  "getByText": [Function],
+  "getByTitle": [Function],
+  "queryAllByAltText": [Function],
+  "queryAllByDisplayValue": [Function],
+  "queryAllByLabelText": [Function],
+  "queryAllByPlaceholderText": [Function],
+  "queryAllByRole": [Function],
+  "queryAllByTestId": [Function],
+  "queryAllByText": [Function],
+  "queryAllByTitle": [Function],
+  "queryByAltText": [Function],
+  "queryByDisplayValue": [Function],
+  "queryByLabelText": [Function],
+  "queryByPlaceholderText": [Function],
+  "queryByRole": [Function],
+  "queryByTestId": [Function],
+  "queryByText": [Function],
+  "queryByTitle": [Function],
+  "rerender": [Function],
+  "unmount": [Function],
+}
+`;
