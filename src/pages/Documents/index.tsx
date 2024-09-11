@@ -9,7 +9,13 @@ import {
   Toast,
   ToastContainer,
 } from "react-bootstrap";
-import { faEdit, faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
+import {
+  faClockRotateLeft,
+  faDownload,
+  faEdit,
+  faPlus,
+  faTrash,
+} from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Formik } from "formik";
 import * as yup from "yup";
@@ -20,14 +26,22 @@ import api from "../../services/api";
 import { NavBar } from "../../components";
 import Logo from "../../assets/logo.png";
 import { dataDocumetationType } from "../DocumentTypes";
+import { ModalComponent } from "../../components/Modal";
+import { Link } from "react-router-dom";
 
 interface FormDataDocuments {
   name: string;
+  autoClassification: boolean;
   fileUpload: null;
   documentationType: string;
 }
 
-interface dataType {
+interface FormEditDataDocuments {
+  name: string;
+  documentationType: string;
+}
+
+export interface dataType {
   id: number;
   dataHora: Date;
   nomeDocumento: string;
@@ -39,7 +53,12 @@ interface dataType {
 export function Documents() {
   const [loadingScreen, setLoadingScreen] = useState(false);
   const [loadingButton, setLoadingButton] = useState(false);
+
+  const [formModalShow, setFormModalShow] = useState(false);
+  const [formEditModalShow, setFormEditModalShow] = useState(false);
   const [modalShow, setModalShow] = useState(false);
+
+  const [item, setItem] = useState({} as dataType);
   const [toastShow, setToastShow] = useState(false);
   const [toastText, setToastText] = useState<string[]>([]);
   const [dataDocuments, setDataDocuments] = useState([]);
@@ -65,7 +84,7 @@ export function Documents() {
     }, 1500);
   }, []);
 
-  const handleDeleteDocument = async (id: number) => {
+  const handleDelete = async (id: number) => {
     setLoadingScreen(true);
     await api
       .delete(`/documentos/${id}`)
@@ -118,7 +137,7 @@ export function Documents() {
           "Documento enviado com sucesso!",
         ]);
         setLoadingButton(false);
-        setModalShow(false);
+        setFormModalShow(false);
         setToastShow(true);
         const { data } = await api.get("/documentos");
         setDataDocuments(data);
@@ -132,6 +151,64 @@ export function Documents() {
         setLoadingButton(false);
         setToastShow(true);
       });
+  };
+
+  const handleEditSubmit = async (values: FormEditDataDocuments) => {
+    setLoadingButton(true);
+
+    const formData = new FormData();
+    formData.append(
+      "documentoDTO",
+      JSON.stringify({
+        id: item.id,
+        nomeDocumento: values.name,
+        tipoDocumentalId: values.documentationType,
+      })
+    );
+    // @ts-ignore
+    formData.append("file", values.fileUpload[0]);
+
+    await api
+      .post(`/documentos`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      })
+      .then(async () => {
+        setToastText([
+          "success",
+          "O Guardião",
+          "Documento enviado com sucesso!",
+        ]);
+        setLoadingButton(false);
+        setFormModalShow(false);
+        setToastShow(true);
+        const { data } = await api.get("/documentos");
+        setDataDocuments(data);
+      })
+      .catch((err) => {
+        setToastText([
+          "danger",
+          "O Guardião",
+          `Documento não foi enviado!, ${err}`,
+        ]);
+        setLoadingButton(false);
+        setToastShow(true);
+      });
+  };
+
+  const handleDownload = async (item: dataType) => {
+    setLoadingScreen(true);
+    const { data } = await api.get(`/documentos/${item.id}/arquivo`, {
+      responseType: "blob",
+    });
+    const url = window.URL.createObjectURL(new Blob([data]));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${item.nomeDocumento}.pdf`;
+    document.body.appendChild(link);
+    link.click();
+    setLoadingScreen(false);
   };
 
   const schema = yup.object().shape({
@@ -153,6 +230,11 @@ export function Documents() {
         }
         return true;
       }),
+    documentationType: yup.string().required("Tipo documental é obrigatório"),
+  });
+
+  const schemaEdit = yup.object().shape({
+    name: yup.string().required("Nome do arquivo obrigatório"),
     documentationType: yup.string().required("Tipo documental é obrigatório"),
   });
 
@@ -190,13 +272,30 @@ export function Documents() {
           <h1>
             <span className="poppins-bold">Documentos</span>
           </h1>
-          <Button
-            onClick={() => setModalShow(true)}
-            className="button-home justify-content-center align-items-center"
-            style={{ fontSize: "1.2rem" }}
-          >
-            <FontAwesomeIcon icon={faPlus} />
-          </Button>
+          <div>
+            <Link to="/expirados">
+              <Button
+                className="justify-content-center align-items-center"
+                style={{
+                  fontSize: "1.2rem",
+                  border: "none",
+                  background: "var(--red)",
+                }}
+              >
+                <FontAwesomeIcon icon={faClockRotateLeft} />
+                <span style={{ marginLeft: "0.5rem", fontSize: "1rem" }}>
+                  {"Expirados"}
+                </span>
+              </Button>
+            </Link>
+            <Button
+              onClick={() => setFormModalShow(true)}
+              className="button-home justify-content-center align-items-center"
+              style={{ fontSize: "1.2rem", border: "none", marginLeft: "1rem" }}
+            >
+              <FontAwesomeIcon icon={faPlus} />
+            </Button>
+          </div>
         </div>
         {loadingScreen ? (
           <div
@@ -247,7 +346,12 @@ export function Documents() {
                             <td>
                               {documentType
                                 ? // @ts-ignore
-                                  documentType.tempoRetencao
+                                  `${documentType.tempoRetencao} ${
+                                    // @ts-ignore
+                                    documentType?.tempoRetencao === 1
+                                      ? "ano"
+                                      : "anos"
+                                  }`
                                 : "Documento não encontrado"}
                             </td>
                             <td>
@@ -256,15 +360,33 @@ export function Documents() {
 
                             <td>
                               <Button
-                                className="button-edit justify-content-center align-items-center"
+                                key={`download-${item.id}`}
+                                className="button button-download justify-content-center align-items-center"
+                                style={{ fontSize: "1.2rem" }}
+                                onClick={() => {
+                                  handleDownload(item);
+                                }}
+                              >
+                                <FontAwesomeIcon icon={faDownload} />
+                              </Button>
+                              <Button
+                                key={`edit-${item.id}`}
+                                onClick={() => {
+                                  setFormEditModalShow(true);
+                                  setItem(item);
+                                }}
+                                className="button button-edit justify-content-center align-items-center"
                                 style={{ fontSize: "1.2rem" }}
                               >
                                 <FontAwesomeIcon icon={faEdit} />
                               </Button>
                               <Button
                                 key={`delete-${item.id}`}
-                                onClick={() => handleDeleteDocument(item.id)}
-                                className="button-trash justify-content-center align-items-center"
+                                onClick={() => {
+                                  setModalShow(true);
+                                  setItem(item);
+                                }}
+                                className="button button-trash justify-content-center align-items-center"
                                 style={{ fontSize: "1.2rem" }}
                               >
                                 <FontAwesomeIcon icon={faTrash} />
@@ -279,123 +401,257 @@ export function Documents() {
               )}
             </div>
 
-            <Modal
-              show={modalShow}
-              onHide={() => setModalShow(false)}
-              size="md"
-              aria-labelledby="contained-modal-title-vcenter"
-              centered
-            >
-              <Modal.Header closeButton>
-                <Modal.Title id="contained-modal-title-vcenter">
-                  Novo Documento
-                </Modal.Title>
-              </Modal.Header>
-              <Formik
-                validationSchema={schema}
-                onSubmit={handleSubmit}
-                initialValues={{
-                  name: "",
-                  fileUpload: null as any,
-                  documentationType: "",
-                }}
+            {formModalShow && (
+              <Modal
+                show={formModalShow}
+                onHide={() => setFormModalShow(false)}
+                size="md"
+                aria-labelledby="contained-modal-title-vcenter"
+                centered
               >
-                {({
-                  setFieldValue,
-                  handleSubmit,
-                  handleChange,
-                  values,
-                  touched,
-                  errors,
-                }) => (
-                  <Form noValidate onSubmit={handleSubmit}>
-                    <Modal.Body>
-                      <Form.Group
-                        as={Col}
-                        className="mb-3"
-                        controlId="description"
-                      >
-                        <Form.Label>Nome do Documento</Form.Label>
-                        <Form.Control
-                          type="text"
-                          name="name"
-                          autoFocus
-                          value={values.name}
-                          onChange={handleChange}
-                          isInvalid={touched.name && !!errors.name}
-                        />
-                        <Form.Control.Feedback type="invalid">
-                          {errors.name}
-                        </Form.Control.Feedback>
-                      </Form.Group>
-
-                      <Form.Group controlId="formFile" className="mb-3">
-                        <Form.Label>Arquivo</Form.Label>
-                        <Form.Control
-                          type="file"
-                          name="fileUpload"
-                          accept=".pdf"
-                          onChange={(event) => {
-                            setFieldValue(
-                              "fileUpload",
-                              // @ts-ignore
-                              event.currentTarget.files
-                            );
-                          }}
-                          isInvalid={touched.fileUpload && !!errors.fileUpload}
-                        />
-                        <Form.Control.Feedback type="invalid">
-                          {errors.fileUpload}
-                        </Form.Control.Feedback>
-                      </Form.Group>
-
-                      <Form.Group controlId="formSelect" className="mb-3">
-                        <Form.Label>Tipo documental</Form.Label>
-                        <Form.Select
-                          aria-label="Tipo documental"
-                          name="documentationType"
-                          value={values.documentationType}
-                          onChange={handleChange}
-                          isInvalid={
-                            touched.documentationType &&
-                            !!errors.documentationType
-                          }
+                <Modal.Header
+                  closeButton
+                  style={{ backgroundColor: "#5669db", color: "#fff" }}
+                >
+                  <Modal.Title id="contained-modal-title-vcenter">
+                    Novo Documento
+                  </Modal.Title>
+                </Modal.Header>
+                <Formik
+                  validationSchema={schema}
+                  onSubmit={handleSubmit}
+                  initialValues={{
+                    name: "",
+                    autoClassification: true,
+                    fileUpload: null as any,
+                    documentationType: "",
+                  }}
+                >
+                  {({
+                    setFieldValue,
+                    handleSubmit,
+                    handleChange,
+                    values,
+                    touched,
+                    errors,
+                  }) => (
+                    <Form noValidate onSubmit={handleSubmit}>
+                      <Modal.Body>
+                        <Form.Group
+                          as={Col}
+                          className="mb-3"
+                          controlId="description"
                         >
-                          <option>Selecione uma opção</option>
-                          {dataDocumentationTypes
-                            .filter(
-                              (item: dataDocumetationType) =>
-                                item.status === "Ativo"
-                            )
-                            .map((item: dataDocumetationType) => (
-                              <option key={item.id} value={item.id}>
-                                {item.nomeDocumento}
-                              </option>
-                            ))}
-                        </Form.Select>
-                        <Form.Control.Feedback type="invalid">
-                          {errors.documentationType}
-                        </Form.Control.Feedback>
-                      </Form.Group>
-                    </Modal.Body>
-                    <Modal.Footer>
-                      <Button type="submit" disabled={loadingButton}>
-                        {loadingButton && (
-                          <Spinner
-                            as="span"
-                            animation="border"
-                            size="sm"
-                            role="status"
-                            aria-hidden="true"
+                          <Form.Label>Nome do Documento</Form.Label>
+                          <Form.Control
+                            type="text"
+                            name="name"
+                            autoFocus
+                            value={values.name}
+                            onChange={handleChange}
+                            isInvalid={touched.name && !!errors.name}
                           />
-                        )}{" "}
-                        Enviar
-                      </Button>
-                    </Modal.Footer>
-                  </Form>
-                )}
-              </Formik>
-            </Modal>
+                          <Form.Control.Feedback type="invalid">
+                            {errors.name}
+                          </Form.Control.Feedback>
+                        </Form.Group>
+
+                        <Form.Group controlId="formSwitch" className="mb-3">
+                          <Form.Check
+                            name="autoClassification"
+                            checked={values.autoClassification}
+                            onChange={handleChange}
+                            type="switch"
+                            id="form-switch"
+                            label="Classificação de documento automática"
+                          />
+                        </Form.Group>
+
+                        <Form.Group controlId="formFile" className="mb-3">
+                          <Form.Label>Arquivo</Form.Label>
+                          <Form.Control
+                            type="file"
+                            name="fileUpload"
+                            accept=".pdf"
+                            onChange={(event) => {
+                              setFieldValue(
+                                "fileUpload",
+                                // @ts-ignore
+                                event.currentTarget.files
+                              );
+                            }}
+                            isInvalid={
+                              touched.fileUpload && !!errors.fileUpload
+                            }
+                          />
+                          <Form.Control.Feedback type="invalid">
+                            {errors.fileUpload}
+                          </Form.Control.Feedback>
+                        </Form.Group>
+
+                        <Form.Group controlId="formSelect" className="mb-3">
+                          <Form.Label>Tipo documental</Form.Label>
+                          <Form.Select
+                            aria-label="Tipo documental"
+                            name="documentationType"
+                            value={values.documentationType}
+                            onChange={handleChange}
+                            isInvalid={
+                              touched.documentationType &&
+                              !!errors.documentationType
+                            }
+                          >
+                            <option>Selecione uma opção</option>
+                            {dataDocumentationTypes
+                              .filter(
+                                (item: dataDocumetationType) =>
+                                  // @ts-ignore
+                                  item.status === true
+                              )
+                              .map((item: dataDocumetationType) => (
+                                <option key={item.id} value={item.id}>
+                                  {item.nomeDocumento}
+                                </option>
+                              ))}
+                          </Form.Select>
+                          <Form.Control.Feedback type="invalid">
+                            {errors.documentationType}
+                          </Form.Control.Feedback>
+                        </Form.Group>
+                      </Modal.Body>
+                      <Modal.Footer>
+                        <Button type="submit" disabled={loadingButton}>
+                          {loadingButton && (
+                            <Spinner
+                              as="span"
+                              animation="border"
+                              size="sm"
+                              role="status"
+                              aria-hidden="true"
+                            />
+                          )}{" "}
+                          Enviar
+                        </Button>
+                      </Modal.Footer>
+                    </Form>
+                  )}
+                </Formik>
+              </Modal>
+            )}
+
+            {formEditModalShow && (
+              <Modal
+                show={formEditModalShow}
+                onHide={() => setFormEditModalShow(false)}
+                size="md"
+                aria-labelledby="contained-modal-title-vcenter"
+                centered
+              >
+                <Modal.Header
+                  closeButton
+                  style={{ backgroundColor: "#5669db", color: "#fff" }}
+                >
+                  <Modal.Title id="contained-modal-title-vcenter">
+                    Editar Documento
+                  </Modal.Title>
+                </Modal.Header>
+                <Formik
+                  validationSchema={schemaEdit}
+                  onSubmit={handleEditSubmit}
+                  initialValues={{
+                    name: item?.nomeDocumento,
+                    documentationType: item?.tipoDocumentalId.toString(),
+                  }}
+                >
+                  {({
+                    handleSubmit,
+                    handleChange,
+                    values,
+                    touched,
+                    errors,
+                  }) => (
+                    <Form noValidate onSubmit={handleSubmit}>
+                      <Modal.Body>
+                        <Form.Group
+                          as={Col}
+                          className="mb-3"
+                          controlId="formEditDescription"
+                        >
+                          <Form.Label>Nome do Documento</Form.Label>
+                          <Form.Control
+                            type="text"
+                            name="name"
+                            autoFocus
+                            value={values.name}
+                            onChange={handleChange}
+                            isInvalid={touched.name && !!errors.name}
+                          />
+                          <Form.Control.Feedback type="invalid">
+                            {errors.name}
+                          </Form.Control.Feedback>
+                        </Form.Group>
+
+                        <Form.Group controlId="formEditSelect" className="mb-3">
+                          <Form.Label>Tipo documental</Form.Label>
+                          <Form.Select
+                            aria-label="Tipo documental"
+                            name="documentationType"
+                            value={values.documentationType}
+                            onChange={handleChange}
+                            isInvalid={
+                              touched.documentationType &&
+                              !!errors.documentationType
+                            }
+                          >
+                            <option>Selecione uma opção</option>
+                            {dataDocumentationTypes
+                              .filter(
+                                (item: dataDocumetationType) =>
+                                  // @ts-ignore
+                                  item.status === true
+                              )
+                              .map((item: dataDocumetationType) => (
+                                <option key={item.id} value={item.id}>
+                                  {item.nomeDocumento}
+                                </option>
+                              ))}
+                          </Form.Select>
+                          <Form.Control.Feedback type="invalid">
+                            {errors.documentationType}
+                          </Form.Control.Feedback>
+                        </Form.Group>
+                      </Modal.Body>
+                      <Modal.Footer>
+                        <Button type="submit" disabled={loadingButton}>
+                          {loadingButton && (
+                            <Spinner
+                              as="span"
+                              animation="border"
+                              size="sm"
+                              role="status"
+                              aria-hidden="true"
+                            />
+                          )}{" "}
+                          Editar
+                        </Button>
+                      </Modal.Footer>
+                    </Form>
+                  )}
+                </Formik>
+              </Modal>
+            )}
+
+            {modalShow && (
+              <ModalComponent
+                show={modalShow}
+                setShow={setModalShow}
+                item={item}
+                handleDelete={handleDelete}
+                header={`Documento: ${item.nomeDocumento}`}
+                message="Tem certeza que deseja excluir esse documento?"
+                messageButton="Excluir"
+              />
+            )}
           </>
         )}
       </div>

@@ -27,7 +27,6 @@ function NavBar() {
             <Nav.Link href="/">Home</Nav.Link>
             <Nav.Link href="tipos-documentais">Tipos Documentais</Nav.Link>
             <Nav.Link href="documentos">Documentos</Nav.Link>
-            <Nav.Link href="sobre-nos">Sobre nós</Nav.Link>
           </Nav>
         </Navbar.Collapse>
       </Container>

@@ -20,6 +20,8 @@ import api from "../../services/api";
 
 import { NavBar } from "../../components";
 import Logo from "../../assets/logo.png";
+import { ModalComponent } from "../../components/Modal";
+import { Pagination } from "../../components/Pagination";
 
 interface FormDataDocumentTypes {
   description: string;
@@ -39,15 +41,36 @@ export interface dataDocumetationType {
 export function DocumentTypes() {
   const [loadingScreen, setLoadingScreen] = useState(false);
   const [loadingButton, setLoadingButton] = useState(false);
+
+  const [formModalShow, setFormModalShow] = useState(false);
+  const [formEditModalShow, setFormEditModalShow] = useState(false);
   const [modalShow, setModalShow] = useState(false);
+
   const [toastShow, setToastShow] = useState(false);
   const [toastText, setToastText] = useState<string[]>([]);
+  const [item, setItem] = useState({} as dataDocumetationType);
   const [data, setData] = useState([]);
+
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setTotalPerPage] = useState(5);
+
+  // Pagination - Get Current Posts
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = data.slice(indexOfFirstItem, indexOfLastItem);
+
+  // Pagination - change page
+  const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
 
   useEffect(() => {
     setLoadingScreen(true);
     const loadData = async () => {
       const { data } = await api.get("/tiposdocumentais");
+      data.map((item: any) => {
+        item.status = item.status == true ? "Ativo" : "Inativo";
+      });
+      data.sort((itemA: any, itemB: any) => itemA.id - itemB.id);
       setData(data);
     };
 
@@ -58,7 +81,7 @@ export function DocumentTypes() {
     }, 1500);
   }, []);
 
-  const handleDeleteDocument = async (id: number) => {
+  const handleDelete = async (id: number) => {
     setLoadingScreen(true);
     await api
       .delete(`/tiposdocumentais/${id}`)
@@ -71,6 +94,10 @@ export function DocumentTypes() {
         setLoadingScreen(false);
         setToastShow(true);
         const { data } = await api.get("/tiposdocumentais");
+        data.map((item: any) => {
+          item.status = item.status == true ? "Ativo" : "Inativo";
+        });
+        data.sort((itemA: any, itemB: any) => itemA.id - itemB.id);
         setData(data);
       })
       .catch((err) => {
@@ -90,12 +117,8 @@ export function DocumentTypes() {
     const data = {
       nomeDocumento: values.description,
       leiRegulamentadora: values.regulatoryLaw,
-      tempoRetencao: String(
-        `${values.retentionPeriod} ${
-          values.retentionPeriod === 1 ? "ano" : "anos"
-        }`
-      ),
-      status: values.status,
+      tempoRetencao: values.retentionPeriod,
+      status: values.status === "Ativo" ? true : false,
     };
 
     await api
@@ -107,17 +130,60 @@ export function DocumentTypes() {
           "Tipo Documental cadastrado com sucesso!",
         ]);
         setLoadingButton(false);
-        setModalShow(false);
+        setFormModalShow(false);
         setToastShow(true);
         const { data } = await api.get("/tiposdocumentais");
+        data.map((item: any) => {
+          item.status = item.status == true ? "Ativo" : "Inativo";
+        });
+        data.sort((itemA: any, itemB: any) => itemA.id - itemB.id);
         setData(data);
       })
       .catch((err) => {
-        console.log(err);
         setToastText([
           "danger",
           "O Guardião",
           `Tipo Documental não foi cadastrado! ${err?.response?.data?.message}`,
+        ]);
+        setLoadingButton(false);
+        setToastShow(true);
+      });
+  };
+
+  const handleEditSubmit = async (values: FormDataDocumentTypes) => {
+    setLoadingButton(true);
+
+    const data = {
+      id: item.id,
+      nomeDocumento: values.description,
+      leiRegulamentadora: values.regulatoryLaw,
+      tempoRetencao: values.retentionPeriod,
+      status: values.status === "Ativo" ? true : false,
+    };
+
+    await api
+      .post(`/tiposdocumentais/1`, data)
+      .then(async () => {
+        setToastText([
+          "success",
+          "O Guardião",
+          "Tipo Documental editado com sucesso!",
+        ]);
+        setLoadingButton(false);
+        setFormEditModalShow(false);
+        setToastShow(true);
+        const { data } = await api.get("/tiposdocumentais");
+        data.map((item: any) => {
+          item.status = item.status == true ? "Ativo" : "Inativo";
+        });
+        data.sort((itemA: any, itemB: any) => itemA.id - itemB.id);
+        setData(data);
+      })
+      .catch((err) => {
+        setToastText([
+          "danger",
+          "O Guardião",
+          `Tipo Documental não foi editado! ${err?.response?.data?.message}`,
         ]);
         setLoadingButton(false);
         setToastShow(true);
@@ -166,10 +232,13 @@ export function DocumentTypes() {
       <div className="container">
         <div className="header">
           <h1>
-            <span className="poppins-bold">Tipos Documentais</span>
+            <span data-testid="title" className="poppins-bold">
+              Tipos Documentais
+            </span>
           </h1>
           <Button
-            onClick={() => setModalShow(true)}
+            data-testid="button-add"
+            onClick={() => setFormModalShow(true)}
             className="button-home justify-content-center align-items-center"
             style={{ fontSize: "1.2rem" }}
           >
@@ -185,7 +254,11 @@ export function DocumentTypes() {
               height: "45vh",
             }}
           >
-            <Spinner animation="border" variant="primary" />
+            <Spinner
+              data-testid="spinner"
+              animation="border"
+              variant="primary"
+            />
           </div>
         ) : (
           <>
@@ -194,182 +267,369 @@ export function DocumentTypes() {
                 <h6>Nenhum Tipo Documental Cadastrado</h6>
               ) : (
                 <div>
-                  <Table responsive="sm">
-                    <thead>
-                      <tr>
-                        <th>#</th>
-                        <th>Descrição</th>
-                        <th>Lei Regulamentadora</th>
-                        <th>Tempo de Vigência</th>
-                        <th>Status</th>
-                        <th>Ações</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {data.map((item: dataDocumetationType) => (
-                        <tr key={item.id}>
-                          <td>{item.id}</td>
-                          <td>{item.nomeDocumento}</td>
-                          <td>{item.leiRegulamentadora}</td>
-                          <td>{item.tempoRetencao}</td>
-                          <td>
-                            {item.status.toLowerCase() === "ativo" ? (
-                              <Badge bg="success">{"Ativo"}</Badge>
-                            ) : (
-                              <Badge bg="danger">{"Inativo"}</Badge>
-                            )}
-                          </td>
-                          <td>
-                            <Button
-                              className="button-edit justify-content-center align-items-center"
-                              style={{ fontSize: "1.2rem" }}
-                            >
-                              <FontAwesomeIcon icon={faEdit} />
-                            </Button>
-                            <Button
-                              key={`delete-${item.id}`}
-                              onClick={() => handleDeleteDocument(item.id)}
-                              className="button-trash justify-content-center align-items-center"
-                              style={{ fontSize: "1.2rem" }}
-                            >
-                              <FontAwesomeIcon icon={faTrash} />
-                            </Button>
-                          </td>
+                  <div
+                    style={{
+                      minHeight: "46vh",
+                    }}
+                  >
+                    <Table responsive="sm" data-testid="table">
+                      <thead>
+                        <tr>
+                          <th>#</th>
+                          <th>Descrição</th>
+                          <th>Lei Regulamentadora</th>
+                          <th>Tempo de Vigência</th>
+                          <th>Status</th>
+                          <th>Ações</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </Table>
+                      </thead>
+                      <tbody>
+                        {currentItems.map((item: dataDocumetationType) => (
+                          <tr key={item.id}>
+                            <td>{item.id}</td>
+                            <td>{item.nomeDocumento}</td>
+                            <td>{item.leiRegulamentadora}</td>
+                            <td>{`${item.tempoRetencao} ${
+                              item.tempoRetencao === 1 ? "ano" : "anos"
+                            }`}</td>
+                            <td>
+                              {item.status === "Ativo" ? (
+                                <Badge bg="success">{"Ativo"}</Badge>
+                              ) : (
+                                <Badge bg="danger">{"Inativo"}</Badge>
+                              )}
+                            </td>
+                            <td>
+                              <Button
+                                key={`edit-${item.id}`}
+                                onClick={() => {
+                                  setFormEditModalShow(true);
+                                  setItem(item);
+                                }}
+                                className="button button-edit justify-content-center align-items-center"
+                                style={{ fontSize: "1.2rem" }}
+                              >
+                                <FontAwesomeIcon icon={faEdit} />
+                              </Button>
+                              <Button
+                                key={`delete-${item.id}`}
+                                onClick={() => {
+                                  setModalShow(true);
+                                  setItem(item);
+                                }}
+                                className="button button-trash justify-content-center align-items-center"
+                                style={{ fontSize: "1.2rem" }}
+                              >
+                                <FontAwesomeIcon icon={faTrash} />
+                              </Button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </Table>
+                  </div>
+                  <Pagination
+                    itemsPerPage={itemsPerPage}
+                    totalItems={data.length}
+                    paginate={paginate}
+                  />
                 </div>
               )}
             </div>
 
-            <Modal
-              show={modalShow}
-              onHide={() => setModalShow(false)}
-              size="md"
-              aria-labelledby="contained-modal-title-vcenter"
-              centered
-            >
-              <Modal.Header closeButton>
-                <Modal.Title id="contained-modal-title-vcenter">
-                  Novo Tipo Documental
-                </Modal.Title>
-              </Modal.Header>
-              <Formik
-                validationSchema={schema}
-                onSubmit={handleSubmit}
-                initialValues={{
-                  description: "",
-                  regulatoryLaw: "",
-                  retentionPeriod: 1,
-                  status: "",
-                }}
+            {formModalShow && (
+              <Modal
+                show={formModalShow}
+                onHide={() => setFormModalShow(false)}
+                size="md"
+                aria-labelledby="contained-modal-title-vcenter"
+                centered
               >
-                {({ handleSubmit, handleChange, values, touched, errors }) => (
-                  <Form noValidate onSubmit={handleSubmit}>
-                    <Modal.Body>
-                      <Form.Group
-                        as={Col}
-                        className="mb-3"
-                        controlId="description"
-                      >
-                        <Form.Label>Descrição</Form.Label>
-                        <Form.Control
-                          type="text"
-                          name="description"
-                          autoFocus
-                          value={values.description}
-                          onChange={handleChange}
-                          isInvalid={
-                            touched.description && !!errors.description
-                          }
-                        />
-                        <Form.Control.Feedback type="invalid">
-                          {errors.description}
-                        </Form.Control.Feedback>
-                      </Form.Group>
-
-                      <Form.Group
-                        className="mb-3"
-                        controlId="exampleForm.ControlInput2"
-                      >
-                        <Form.Label>Lei Regulamentadora</Form.Label>
-                        <Form.Control
-                          type="text"
-                          name="regulatoryLaw"
-                          value={values.regulatoryLaw}
-                          onChange={handleChange}
-                          isInvalid={
-                            touched.regulatoryLaw && !!errors.regulatoryLaw
-                          }
-                        />
-                        <Form.Control.Feedback type="invalid">
-                          {errors.regulatoryLaw}
-                        </Form.Control.Feedback>
-                      </Form.Group>
-
-                      <Form.Group
-                        className="mb-3"
-                        controlId="exampleForm.ControlInput1"
-                      >
-                        <Form.Label>Tempo de Vigência</Form.Label>
-                        <InputGroup className="mb-3">
+                <Modal.Header
+                  closeButton
+                  style={{ backgroundColor: "#5669db", color: "#fff" }}
+                >
+                  <Modal.Title id="contained-modal-title-vcenter">
+                    Novo Tipo Documental
+                  </Modal.Title>
+                </Modal.Header>
+                <Formik
+                  validationSchema={schema}
+                  onSubmit={handleSubmit}
+                  initialValues={{
+                    description: "",
+                    regulatoryLaw: "",
+                    retentionPeriod: 1,
+                    status: "",
+                  }}
+                >
+                  {({
+                    handleSubmit,
+                    handleChange,
+                    values,
+                    touched,
+                    errors,
+                  }) => (
+                    <Form noValidate onSubmit={handleSubmit}>
+                      <Modal.Body>
+                        <Form.Group
+                          as={Col}
+                          className="mb-3"
+                          controlId="description"
+                        >
+                          <Form.Label>Descrição</Form.Label>
                           <Form.Control
-                            type="number"
-                            placeholder="Digite um número"
-                            name="retentionPeriod"
-                            value={values.retentionPeriod}
+                            type="text"
+                            name="description"
+                            autoFocus
+                            value={values.description}
                             onChange={handleChange}
                             isInvalid={
-                              touched.retentionPeriod &&
-                              !!errors.retentionPeriod
+                              touched.description && !!errors.description
                             }
                           />
-                          <InputGroup.Text id="basic-addon2">
-                            {values.retentionPeriod === 1 ? "ano" : "anos"}
-                          </InputGroup.Text>
                           <Form.Control.Feedback type="invalid">
-                            {errors.retentionPeriod}
+                            {errors.description}
                           </Form.Control.Feedback>
-                        </InputGroup>
-                      </Form.Group>
+                        </Form.Group>
 
-                      <Form.Group controlId="formSelect" className="mb-3">
-                        <Form.Label>Status</Form.Label>
-                        <Form.Select
-                          aria-label="Status"
-                          name="status"
-                          value={values.status}
-                          onChange={handleChange}
-                          isInvalid={touched.status && !!errors.status}
+                        <Form.Group
+                          className="mb-3"
+                          controlId="exampleForm.ControlInput2"
                         >
-                          <option>Selecione uma opção</option>
-                          <option value="Ativo">Ativo</option>
-                          <option value="Inativo">Inativo</option>
-                        </Form.Select>
-                        <Form.Control.Feedback type="invalid">
-                          {errors.status}
-                        </Form.Control.Feedback>
-                      </Form.Group>
-                    </Modal.Body>
-                    <Modal.Footer>
-                      <Button type="submit" disabled={loadingButton}>
-                        {loadingButton && (
-                          <Spinner
-                            as="span"
-                            animation="border"
-                            size="sm"
-                            role="status"
-                            aria-hidden="true"
+                          <Form.Label>Lei Regulamentadora</Form.Label>
+                          <Form.Control
+                            type="text"
+                            name="regulatoryLaw"
+                            value={values.regulatoryLaw}
+                            onChange={handleChange}
+                            isInvalid={
+                              touched.regulatoryLaw && !!errors.regulatoryLaw
+                            }
                           />
-                        )}{" "}
-                        Cadastrar
-                      </Button>
-                    </Modal.Footer>
-                  </Form>
-                )}
-              </Formik>
-            </Modal>
+                          <Form.Control.Feedback type="invalid">
+                            {errors.regulatoryLaw}
+                          </Form.Control.Feedback>
+                        </Form.Group>
+
+                        <Form.Group
+                          className="mb-3"
+                          controlId="exampleForm.ControlInput1"
+                        >
+                          <Form.Label>Tempo de Vigência</Form.Label>
+                          <InputGroup className="mb-3">
+                            <Form.Control
+                              type="number"
+                              placeholder="Digite um número"
+                              name="retentionPeriod"
+                              value={values.retentionPeriod}
+                              onChange={handleChange}
+                              isInvalid={
+                                touched.retentionPeriod &&
+                                !!errors.retentionPeriod
+                              }
+                              min={1}
+                            />
+                            <InputGroup.Text id="basic-addon2">
+                              {values.retentionPeriod === 1 ? "ano" : "anos"}
+                            </InputGroup.Text>
+                            <Form.Control.Feedback type="invalid">
+                              {errors.retentionPeriod}
+                            </Form.Control.Feedback>
+                          </InputGroup>
+                        </Form.Group>
+
+                        <Form.Group controlId="formSelect" className="mb-3">
+                          <Form.Label>Status</Form.Label>
+                          <Form.Select
+                            aria-label="Status"
+                            name="status"
+                            value={values.status}
+                            onChange={handleChange}
+                            isInvalid={touched.status && !!errors.status}
+                          >
+                            <option>Selecione uma opção</option>
+                            <option value="Ativo">Ativo</option>
+                            <option value="Inativo">Inativo</option>
+                          </Form.Select>
+                          <Form.Control.Feedback type="invalid">
+                            {errors.status}
+                          </Form.Control.Feedback>
+                        </Form.Group>
+                      </Modal.Body>
+                      <Modal.Footer>
+                        <Button type="submit" disabled={loadingButton}>
+                          {loadingButton && (
+                            <Spinner
+                              as="span"
+                              animation="border"
+                              size="sm"
+                              role="status"
+                              aria-hidden="true"
+                            />
+                          )}{" "}
+                          Cadastrar
+                        </Button>
+                      </Modal.Footer>
+                    </Form>
+                  )}
+                </Formik>
+              </Modal>
+            )}
+
+            {formEditModalShow && (
+              <Modal
+                show={formEditModalShow}
+                onHide={() => setFormEditModalShow(false)}
+                size="md"
+                aria-labelledby="contained-edit-modal-title-vcenter"
+                centered
+              >
+                <Modal.Header
+                  closeButton
+                  style={{ backgroundColor: "#5669db", color: "#fff" }}
+                >
+                  <Modal.Title id="contained-edit-modal-title-vcenter">
+                    Editar Tipo Documental
+                  </Modal.Title>
+                </Modal.Header>
+                <Formik
+                  validationSchema={schema}
+                  onSubmit={handleEditSubmit}
+                  initialValues={{
+                    description: item.nomeDocumento,
+                    regulatoryLaw: item.leiRegulamentadora,
+                    retentionPeriod: Number(
+                      item.tempoRetencao.toString().split(" ")[0]
+                    ),
+                    status: item.status,
+                  }}
+                >
+                  {({
+                    handleSubmit,
+                    handleChange,
+                    values,
+                    touched,
+                    errors,
+                  }) => (
+                    <Form noValidate onSubmit={handleSubmit}>
+                      <Modal.Body>
+                        <Form.Group
+                          as={Col}
+                          className="mb-3"
+                          controlId="description"
+                        >
+                          <Form.Label>Descrição</Form.Label>
+                          <Form.Control
+                            type="text"
+                            name="description"
+                            autoFocus
+                            value={values.description}
+                            onChange={handleChange}
+                            isInvalid={
+                              touched.description && !!errors.description
+                            }
+                          />
+                          <Form.Control.Feedback type="invalid">
+                            {errors.description}
+                          </Form.Control.Feedback>
+                        </Form.Group>
+
+                        <Form.Group
+                          className="mb-3"
+                          controlId="exampleForm.ControlInput2"
+                        >
+                          <Form.Label>Lei Regulamentadora</Form.Label>
+                          <Form.Control
+                            type="text"
+                            name="regulatoryLaw"
+                            value={values.regulatoryLaw}
+                            onChange={handleChange}
+                            isInvalid={
+                              touched.regulatoryLaw && !!errors.regulatoryLaw
+                            }
+                          />
+                          <Form.Control.Feedback type="invalid">
+                            {errors.regulatoryLaw}
+                          </Form.Control.Feedback>
+                        </Form.Group>
+
+                        <Form.Group
+                          className="mb-3"
+                          controlId="editForm.ControlInput1"
+                        >
+                          <Form.Label>Tempo de Vigência</Form.Label>
+                          <InputGroup className="mb-3">
+                            <Form.Control
+                              type="number"
+                              placeholder="Digite um número"
+                              name="retentionPeriod"
+                              value={values.retentionPeriod}
+                              onChange={handleChange}
+                              isInvalid={
+                                touched.retentionPeriod &&
+                                !!errors.retentionPeriod
+                              }
+                              min={1}
+                            />
+                            <InputGroup.Text id="basic-addon2">
+                              {values.retentionPeriod === 1 ? "ano" : "anos"}
+                            </InputGroup.Text>
+                            <Form.Control.Feedback type="invalid">
+                              {errors.retentionPeriod}
+                            </Form.Control.Feedback>
+                          </InputGroup>
+                        </Form.Group>
+
+                        <Form.Group controlId="formEditSelect" className="mb-3">
+                          <Form.Label>Status</Form.Label>
+                          <Form.Select
+                            aria-label="Status"
+                            name="status"
+                            value={values.status}
+                            onChange={handleChange}
+                            isInvalid={touched.status && !!errors.status}
+                          >
+                            <option>Selecione uma opção</option>
+                            <option value="Ativo">Ativo</option>
+                            <option value="Inativo">Inativo</option>
+                          </Form.Select>
+                          <Form.Control.Feedback type="invalid">
+                            {errors.status}
+                          </Form.Control.Feedback>
+                        </Form.Group>
+                      </Modal.Body>
+                      <Modal.Footer>
+                        <Button type="submit" disabled={loadingButton}>
+                          {loadingButton && (
+                            <Spinner
+                              as="span"
+                              animation="border"
+                              size="sm"
+                              role="status"
+                              aria-hidden="true"
+                            />
+                          )}{" "}
+                          Editar
+                        </Button>
+                      </Modal.Footer>
+                    </Form>
+                  )}
+                </Formik>
+              </Modal>
+            )}
+
+            {modalShow && (
+              <ModalComponent
+                show={modalShow}
+                setShow={setModalShow}
+                item={item}
+                handleDelete={handleDelete}
+                header={`Tipo de Documento: ${item.nomeDocumento}`}
+                message="Tem certeza que deseja excluir esse tipo de documento?"
+                messageButton="Excluir"
+              />
+            )}
           </>
         )}
       </div>

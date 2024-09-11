@@ -208,12 +208,25 @@ ul {
 
 /* Document Types */
 
-.button-edit {
+.button {
   margin-right: 1rem !important;
   padding: 0 !important;
   background-color: transparent !important;
   border: none !important;
   cursor: pointer;
+}
+
+.button-download {
+  color: var(--blue);
+
+  svg {
+    path {
+      fill: var(--blue);
+    }
+  }
+}
+
+.button-edit {
   color: var(--yellow);
 
   svg {
@@ -224,11 +237,6 @@ ul {
 }
 
 .button-trash {
-  margin-right: 1rem !important;
-  padding: 0 !important;
-  background-color: transparent !important;
-  border: none !important;
-  cursor: pointer;
   color: var(--red);
 
   svg {
@@ -236,4 +244,14 @@ ul {
       fill: var(--red);
     }
   }
+}
+
+/* Pagination */
+
+.inactive {
+  background-color: var(--gray) !important;
+}
+
+.active {
+  background-color: var(--white) !important;
 }

@@ -18,7 +18,7 @@ export default defineConfig({
     environment: "happy-dom",
     setupFiles: "./test/setup.ts",
     coverage: {
-      // exclude: ["**/node_modules/**", "**/dist/**"],
+      exclude: ["**/src/main.tsx"],
       include: ["src/**/*.{ts,tsx}"],
       reporter: ["text", "json", "html"],
     },
