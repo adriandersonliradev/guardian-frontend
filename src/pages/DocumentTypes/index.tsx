@@ -78,7 +78,7 @@ export function DocumentTypes() {
 
     setTimeout(() => {
       setLoadingScreen(false);
-    }, 1500);
+    }, 500);
   }, []);
 
   const handleDelete = async (id: number) => {

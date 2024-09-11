@@ -28,11 +28,12 @@ import Logo from "../../assets/logo.png";
 import { dataDocumetationType } from "../DocumentTypes";
 import { ModalComponent } from "../../components/Modal";
 import { Link } from "react-router-dom";
+import { Pagination } from "../../components/Pagination";
 
 interface FormDataDocuments {
   name: string;
   autoClassification: boolean;
-  fileUpload: null;
+  fileUpload: File;
   documentationType: string;
 }
 
@@ -52,6 +53,7 @@ export interface dataType {
 
 export function Documents() {
   const [loadingScreen, setLoadingScreen] = useState(false);
+  const [loadingModal, setLoadingModal] = useState(false);
   const [loadingButton, setLoadingButton] = useState(false);
 
   const [formModalShow, setFormModalShow] = useState(false);
@@ -63,6 +65,18 @@ export function Documents() {
   const [toastText, setToastText] = useState<string[]>([]);
   const [dataDocuments, setDataDocuments] = useState([]);
   const [dataDocumentationTypes, setDataDocumentationTypes] = useState([]);
+
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setTotalPerPage] = useState(5);
+
+  // Pagination - Get Current Posts
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = dataDocuments.slice(indexOfFirstItem, indexOfLastItem);
+
+  // Pagination - change page
+  const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
 
   useEffect(() => {
     setLoadingScreen(true);
@@ -81,7 +95,7 @@ export function Documents() {
 
     setTimeout(() => {
       setLoadingScreen(false);
-    }, 1500);
+    }, 500);
   }, []);
 
   const handleDelete = async (id: number) => {
@@ -121,6 +135,7 @@ export function Documents() {
         tipoDocumentalId: values.documentationType,
       })
     );
+
     // @ts-ignore
     formData.append("file", values.fileUpload[0]);
 
@@ -134,7 +149,7 @@ export function Documents() {
         setToastText([
           "success",
           "O Guardião",
-          "Documento enviado com sucesso!",
+          "Documento editado com sucesso!",
         ]);
         setLoadingButton(false);
         setFormModalShow(false);
@@ -146,7 +161,7 @@ export function Documents() {
         setToastText([
           "danger",
           "O Guardião",
-          `Documento não foi enviado!, ${err}`,
+          `Documento não foi editado!, ${err}`,
         ]);
         setLoadingButton(false);
         setToastShow(true);
@@ -165,8 +180,16 @@ export function Documents() {
         tipoDocumentalId: values.documentationType,
       })
     );
-    // @ts-ignore
-    formData.append("file", values.fileUpload[0]);
+
+    const pdfFile = new File(
+      // @ts-ignore
+      [Uint8Array.from(atob(item.arquivoPdf), (c) => c.charCodeAt(0))],
+      `${item.nomeDocumento}.pdf`,
+      { type: "application/pdf" }
+    );
+
+    //@ts-ignore
+    formData.append("file", pdfFile);
 
     await api
       .post(`/documentos`, formData, {
@@ -181,7 +204,7 @@ export function Documents() {
           "Documento enviado com sucesso!",
         ]);
         setLoadingButton(false);
-        setFormModalShow(false);
+        setFormEditModalShow(false);
         setToastShow(true);
         const { data } = await api.get("/documentos");
         setDataDocuments(data);
@@ -211,8 +234,33 @@ export function Documents() {
     setLoadingScreen(false);
   };
 
+  const handleAutoClassification = async (file: File) => {
+    setLoadingModal(true);
+
+    const formData = new FormData();
+    // @ts-ignore
+    formData.append("file", file[0]);
+
+    const { data } = await api.post(
+      `/tiposdocumentais/verificartipoarquivopdf`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+
+    console.log(data);
+
+    setLoadingModal(false);
+
+    return data;
+  };
+
   const schema = yup.object().shape({
     name: yup.string().required("Nome do arquivo obrigatório"),
+    autoClassification: yup.boolean(),
     fileUpload: yup
       .mixed()
       .required("O arquivo é obrigatório")
@@ -311,7 +359,7 @@ export function Documents() {
         ) : (
           <>
             <div className="table">
-              {dataDocuments.length === 0 ? (
+              {currentItems.length === 0 ? (
                 <h6>Nenhum Documento Cadastrado</h6>
               ) : (
                 <div>
@@ -397,6 +445,11 @@ export function Documents() {
                       })}
                     </tbody>
                   </Table>
+                  <Pagination
+                    itemsPerPage={itemsPerPage}
+                    totalItems={dataDocuments.length}
+                    paginate={paginate}
+                  />
                 </div>
               )}
             </div>
@@ -436,6 +489,22 @@ export function Documents() {
                     errors,
                   }) => (
                     <Form noValidate onSubmit={handleSubmit}>
+                      {loadingModal && (
+                        <div
+                          style={{
+                            display: "flex",
+                            justifyContent: "center",
+                            alignItems: "center",
+                            height: "50vh",
+                            backgroundColor: "rgba(0, 0, 0, 0.5)",
+                            width: "100%",
+                            zIndex: 100,
+                            position: "absolute",
+                          }}
+                        >
+                          <Spinner animation="border" variant="primary" />
+                        </div>
+                      )}
                       <Modal.Body>
                         <Form.Group
                           as={Col}
@@ -473,19 +542,47 @@ export function Documents() {
                             type="file"
                             name="fileUpload"
                             accept=".pdf"
-                            onChange={(event) => {
+                            onChange={async (event) => {
                               setFieldValue(
                                 "fileUpload",
                                 // @ts-ignore
                                 event.currentTarget.files
                               );
+                              if (values.autoClassification === true) {
+                                const documentationType =
+                                  await handleAutoClassification(
+                                    // @ts-ignore
+                                    event.currentTarget.files
+                                  );
+
+                                if (documentationType.status === true) {
+                                  setFieldValue(
+                                    "documentationType",
+                                    documentationType.id
+                                  );
+                                  setToastText([
+                                    "success",
+                                    "O Guardião",
+                                    `O tipo documental encontrado: ${documentationType.nomeDocumento}`,
+                                  ]);
+                                  setToastShow(true);
+                                } else {
+                                  setToastText([
+                                    "info",
+                                    "O Guardião",
+                                    `O tipo documental ${documentationType.nomeDocumento} está inativo, classifique manualmente`,
+                                  ]);
+                                  setToastShow(true);
+                                }
+                              }
                             }}
                             isInvalid={
                               touched.fileUpload && !!errors.fileUpload
                             }
                           />
                           <Form.Control.Feedback type="invalid">
-                            {errors.fileUpload}
+                            {/* @ts-ignore */}
+                            {errors?.fileUpload}
                           </Form.Control.Feedback>
                         </Form.Group>
 
