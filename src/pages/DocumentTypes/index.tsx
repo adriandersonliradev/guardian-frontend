@@ -36,6 +36,9 @@ export interface dataDocumetationType {
   leiRegulamentadora: string;
   status: string;
   tempoRetencao: number;
+  idDocumentos: number[];
+  quantidadeDocumentos: number;
+  dataExpiracao: Date | null;
 }
 
 export function DocumentTypes() {
@@ -50,6 +53,21 @@ export function DocumentTypes() {
   const [toastText, setToastText] = useState<string[]>([]);
   const [item, setItem] = useState({} as dataDocumetationType);
   const [data, setData] = useState([]);
+
+  const typesDefault = [
+    "contrato",
+    "relatório financeiro",
+    "ata de reunião",
+    "nota fiscal",
+    "proposta comercial",
+    "relatório técnico",
+    "memorando",
+    "laudo pericial",
+    "atestado",
+    "contrato de trabalho",
+    "declaração",
+    "declaração e atestado",
+  ];
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -514,72 +532,81 @@ export function DocumentTypes() {
                   }) => (
                     <Form noValidate onSubmit={handleSubmit}>
                       <Modal.Body>
-                        <Form.Group
-                          as={Col}
-                          className="mb-3"
-                          controlId="description"
-                        >
-                          <Form.Label>Descrição</Form.Label>
-                          <Form.Control
-                            type="text"
-                            name="description"
-                            autoFocus
-                            value={values.description}
-                            onChange={handleChange}
-                            isInvalid={
-                              touched.description && !!errors.description
-                            }
-                          />
-                          <Form.Control.Feedback type="invalid">
-                            {errors.description}
-                          </Form.Control.Feedback>
-                        </Form.Group>
+                        {!typesDefault.includes(
+                          item.nomeDocumento.toLowerCase()
+                        ) && (
+                          <>
+                            <Form.Group
+                              as={Col}
+                              className="mb-3"
+                              controlId="description"
+                            >
+                              <Form.Label>Descrição</Form.Label>
+                              <Form.Control
+                                type="text"
+                                name="description"
+                                autoFocus
+                                value={values.description}
+                                onChange={handleChange}
+                                isInvalid={
+                                  touched.description && !!errors.description
+                                }
+                              />
+                              <Form.Control.Feedback type="invalid">
+                                {errors.description}
+                              </Form.Control.Feedback>
+                            </Form.Group>
 
-                        <Form.Group
-                          className="mb-3"
-                          controlId="exampleForm.ControlInput2"
-                        >
-                          <Form.Label>Lei Regulamentadora</Form.Label>
-                          <Form.Control
-                            type="text"
-                            name="regulatoryLaw"
-                            value={values.regulatoryLaw}
-                            onChange={handleChange}
-                            isInvalid={
-                              touched.regulatoryLaw && !!errors.regulatoryLaw
-                            }
-                          />
-                          <Form.Control.Feedback type="invalid">
-                            {errors.regulatoryLaw}
-                          </Form.Control.Feedback>
-                        </Form.Group>
+                            <Form.Group
+                              className="mb-3"
+                              controlId="exampleForm.ControlInput2"
+                            >
+                              <Form.Label>Lei Regulamentadora</Form.Label>
+                              <Form.Control
+                                type="text"
+                                name="regulatoryLaw"
+                                value={values.regulatoryLaw}
+                                onChange={handleChange}
+                                isInvalid={
+                                  touched.regulatoryLaw &&
+                                  !!errors.regulatoryLaw
+                                }
+                              />
+                              <Form.Control.Feedback type="invalid">
+                                {errors.regulatoryLaw}
+                              </Form.Control.Feedback>
+                            </Form.Group>
 
-                        <Form.Group
-                          className="mb-3"
-                          controlId="editForm.ControlInput1"
-                        >
-                          <Form.Label>Tempo de Vigência</Form.Label>
-                          <InputGroup className="mb-3">
-                            <Form.Control
-                              type="number"
-                              placeholder="Digite um número"
-                              name="retentionPeriod"
-                              value={values.retentionPeriod}
-                              onChange={handleChange}
-                              isInvalid={
-                                touched.retentionPeriod &&
-                                !!errors.retentionPeriod
-                              }
-                              min={1}
-                            />
-                            <InputGroup.Text id="basic-addon2">
-                              {values.retentionPeriod === 1 ? "ano" : "anos"}
-                            </InputGroup.Text>
-                            <Form.Control.Feedback type="invalid">
-                              {errors.retentionPeriod}
-                            </Form.Control.Feedback>
-                          </InputGroup>
-                        </Form.Group>
+                            <Form.Group
+                              className="mb-3"
+                              controlId="editForm.ControlInput1"
+                            >
+                              <Form.Label>Tempo de Vigência</Form.Label>
+                              <InputGroup className="mb-3">
+                                <Form.Control
+                                  type="number"
+                                  placeholder="Digite um número"
+                                  name="retentionPeriod"
+                                  value={values.retentionPeriod}
+                                  onChange={handleChange}
+                                  isInvalid={
+                                    touched.retentionPeriod &&
+                                    !!errors.retentionPeriod
+                                  }
+                                  min={1}
+                                />
+                                <InputGroup.Text id="basic-addon2">
+                                  {values.retentionPeriod === 1
+                                    ? "ano"
+                                    : "anos"}
+                                </InputGroup.Text>
+                                <Form.Control.Feedback type="invalid">
+                                  {errors.retentionPeriod}
+                                </Form.Control.Feedback>
+                              </InputGroup>
+                            </Form.Group>
+                          </>
+                        )}
 
                         <Form.Group controlId="formEditSelect" className="mb-3">
                           <Form.Label>Status</Form.Label>

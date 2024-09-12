@@ -82,6 +82,7 @@ export function Documents() {
     setLoadingScreen(true);
     const loadDataDocuments = async () => {
       const { data } = await api.get("/documentos");
+      data.sort((itemA: any, itemB: any) => itemA.id - itemB.id);
       setDataDocuments(data);
     };
 
@@ -149,7 +150,7 @@ export function Documents() {
         setToastText([
           "success",
           "O Guardião",
-          "Documento editado com sucesso!",
+          "Documento cadastrado com sucesso!",
         ]);
         setLoadingButton(false);
         setFormModalShow(false);
@@ -161,7 +162,7 @@ export function Documents() {
         setToastText([
           "danger",
           "O Guardião",
-          `Documento não foi editado!, ${err}`,
+          `Documento não foi cadastrado!, ${err}`,
         ]);
         setLoadingButton(false);
         setToastShow(true);
@@ -201,7 +202,7 @@ export function Documents() {
         setToastText([
           "success",
           "O Guardião",
-          "Documento enviado com sucesso!",
+          "Documento editado com sucesso!",
         ]);
         setLoadingButton(false);
         setFormEditModalShow(false);
@@ -213,7 +214,7 @@ export function Documents() {
         setToastText([
           "danger",
           "O Guardião",
-          `Documento não foi enviado!, ${err}`,
+          `Documento não foi editado!, ${err}`,
         ]);
         setLoadingButton(false);
         setToastShow(true);
@@ -241,19 +242,17 @@ export function Documents() {
     // @ts-ignore
     formData.append("file", file[0]);
 
-    const { data } = await api.post(
-      `/tiposdocumentais/verificartipoarquivopdf`,
-      formData,
-      {
+    const { data } = await api
+      .post(`/tiposdocumentais/verificartipoarquivopdf`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
-      }
-    );
+      })
+      .finally(() => {
+        setLoadingModal(false);
+      });
 
     console.log(data);
-
-    setLoadingModal(false);
 
     return data;
   };
@@ -359,92 +358,98 @@ export function Documents() {
         ) : (
           <>
             <div className="table">
-              {currentItems.length === 0 ? (
+              {dataDocuments.length === 0 ? (
                 <h6>Nenhum Documento Cadastrado</h6>
               ) : (
                 <div>
-                  <Table responsive="sm">
-                    <thead>
-                      <tr>
-                        <th>#</th>
-                        <th>Nome do documento</th>
-                        <th>Tipo documental</th>
-                        <th>Tempo de retenção</th>
-                        <th>Data</th>
-                        <th>Ações</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {dataDocuments.map((item: dataType) => {
-                        const documentType = dataDocumentationTypes.find(
-                          (type: dataDocumetationType) =>
-                            type.id === item.tipoDocumentalId
-                        );
+                  <div
+                    style={{
+                      minHeight: "46vh",
+                    }}
+                  >
+                    <Table responsive="sm">
+                      <thead>
+                        <tr>
+                          <th>#</th>
+                          <th>Nome do documento</th>
+                          <th>Tipo documental</th>
+                          <th>Tempo de retenção</th>
+                          <th>Data</th>
+                          <th>Ações</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {currentItems.map((item: dataType) => {
+                          const documentType = dataDocumentationTypes.find(
+                            (type: dataDocumetationType) =>
+                              type.id === item.tipoDocumentalId
+                          );
 
-                        return (
-                          <tr key={item.id}>
-                            <td>{item.id}</td>
-                            <td>{item.nomeDocumento}</td>
-                            <td>
-                              {documentType
-                                ? // @ts-ignore
-                                  documentType.nomeDocumento
-                                : "Documento não encontrado"}
-                            </td>
-                            <td>
-                              {documentType
-                                ? // @ts-ignore
-                                  `${documentType.tempoRetencao} ${
-                                    // @ts-ignore
-                                    documentType?.tempoRetencao === 1
-                                      ? "ano"
-                                      : "anos"
-                                  }`
-                                : "Documento não encontrado"}
-                            </td>
-                            <td>
-                              {format(new Date(item.dataHora), "dd/MM/yyyy")}
-                            </td>
+                          return (
+                            <tr key={item.id}>
+                              <td>{item.id}</td>
+                              <td>{item.nomeDocumento}</td>
+                              <td>
+                                {documentType
+                                  ? // @ts-ignore
+                                    documentType.nomeDocumento
+                                  : "Documento não encontrado"}
+                              </td>
+                              <td>
+                                {documentType
+                                  ? // @ts-ignore
+                                    `${documentType.tempoRetencao} ${
+                                      // @ts-ignore
+                                      documentType?.tempoRetencao === 1
+                                        ? "ano"
+                                        : "anos"
+                                    }`
+                                  : "Documento não encontrado"}
+                              </td>
+                              <td>
+                                {format(new Date(item.dataHora), "dd/MM/yyyy")}
+                              </td>
 
-                            <td>
-                              <Button
-                                key={`download-${item.id}`}
-                                className="button button-download justify-content-center align-items-center"
-                                style={{ fontSize: "1.2rem" }}
-                                onClick={() => {
-                                  handleDownload(item);
-                                }}
-                              >
-                                <FontAwesomeIcon icon={faDownload} />
-                              </Button>
-                              <Button
-                                key={`edit-${item.id}`}
-                                onClick={() => {
-                                  setFormEditModalShow(true);
-                                  setItem(item);
-                                }}
-                                className="button button-edit justify-content-center align-items-center"
-                                style={{ fontSize: "1.2rem" }}
-                              >
-                                <FontAwesomeIcon icon={faEdit} />
-                              </Button>
-                              <Button
-                                key={`delete-${item.id}`}
-                                onClick={() => {
-                                  setModalShow(true);
-                                  setItem(item);
-                                }}
-                                className="button button-trash justify-content-center align-items-center"
-                                style={{ fontSize: "1.2rem" }}
-                              >
-                                <FontAwesomeIcon icon={faTrash} />
-                              </Button>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </Table>
+                              <td>
+                                <Button
+                                  key={`download-${item.id}`}
+                                  className="button button-download justify-content-center align-items-center"
+                                  style={{ fontSize: "1.2rem" }}
+                                  onClick={() => {
+                                    handleDownload(item);
+                                  }}
+                                >
+                                  <FontAwesomeIcon icon={faDownload} />
+                                </Button>
+                                <Button
+                                  key={`edit-${item.id}`}
+                                  onClick={() => {
+                                    setFormEditModalShow(true);
+                                    setItem(item);
+                                  }}
+                                  className="button button-edit justify-content-center align-items-center"
+                                  style={{ fontSize: "1.2rem" }}
+                                >
+                                  <FontAwesomeIcon icon={faEdit} />
+                                </Button>
+                                <Button
+                                  key={`delete-${item.id}`}
+                                  onClick={() => {
+                                    setModalShow(true);
+                                    setItem(item);
+                                  }}
+                                  className="button button-trash justify-content-center align-items-center"
+                                  style={{ fontSize: "1.2rem" }}
+                                >
+                                  <FontAwesomeIcon icon={faTrash} />
+                                </Button>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </Table>
+                  </div>
                   <Pagination
                     itemsPerPage={itemsPerPage}
                     totalItems={dataDocuments.length}
@@ -529,7 +534,12 @@ export function Documents() {
                           <Form.Check
                             name="autoClassification"
                             checked={values.autoClassification}
-                            onChange={handleChange}
+                            onChange={(event) => {
+                              setFieldValue(
+                                "autoClassification",
+                                event.currentTarget.checked
+                              );
+                            }}
                             type="switch"
                             id="form-switch"
                             label="Classificação de documento automática"
