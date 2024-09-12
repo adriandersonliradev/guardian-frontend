@@ -82,6 +82,7 @@ export function Documents() {
     setLoadingScreen(true);
     const loadDataDocuments = async () => {
       const { data } = await api.get("/documentos");
+      console.log(data);
       data.sort((itemA: any, itemB: any) => itemA.id - itemB.id);
       setDataDocuments(data);
     };
@@ -156,6 +157,7 @@ export function Documents() {
         setFormModalShow(false);
         setToastShow(true);
         const { data } = await api.get("/documentos");
+        data.sort((itemA: any, itemB: any) => itemA.id - itemB.id);
         setDataDocuments(data);
       })
       .catch((err) => {
@@ -208,6 +210,8 @@ export function Documents() {
         setFormEditModalShow(false);
         setToastShow(true);
         const { data } = await api.get("/documentos");
+        data.sort((itemA: any, itemB: any) => itemA.id - itemB.id);
+
         setDataDocuments(data);
       })
       .catch((err) => {

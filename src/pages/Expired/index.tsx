@@ -102,6 +102,8 @@ export function Expired() {
         setLoadingScreen(false);
         setToastShow(true);
         const { data } = await api.get("/documentos/expirados");
+        data.sort((itemA: any, itemB: any) => itemA.id - itemB.id);
+
         setDataDocumentsExpired(data);
       })
       .catch((err) => {
@@ -128,6 +130,8 @@ export function Expired() {
         setLoadingScreen(false);
         setToastShow(true);
         const { data } = await api.get("/documentos/expirados");
+        data.sort((itemA: any, itemB: any) => itemA.id - itemB.id);
+
         setDataDocumentsExpired(data);
       })
       .catch((err) => {
