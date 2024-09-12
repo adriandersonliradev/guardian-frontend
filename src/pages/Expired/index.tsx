@@ -11,7 +11,7 @@ import {
 import { dataType } from "../Documents";
 import { dataDocumetationType } from "../DocumentTypes";
 import api from "../../services/api";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 
 import Logo from "../../assets/logo.png";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -135,7 +135,6 @@ export function Expired() {
         setDataDocumentsExpired(data);
       })
       .catch((err) => {
-        console.log(err);
         setToastText([
           "danger",
           "O Guardável",
@@ -248,8 +247,8 @@ export function Expired() {
                       className="mb-3"
                     >
                       {selectedRows.length === dataDocumentsExpired.length
-                        ? "Deselecionar Todas"
-                        : "Selecionar Todas"}
+                        ? "Deselecionar tudo"
+                        : "Selecionar tudo"}
                     </Button>
                     <Table responsive="sm">
                       <thead>
@@ -300,7 +299,10 @@ export function Expired() {
                                   : "Documento não encontrado"}
                               </td>
                               <td>
-                                {format(new Date(item.dataHora), "dd/MM/yyyy")}
+                                {format(
+                                  parseISO(String(item.dataHora)),
+                                  "dd/MM/yyyy"
+                                )}
                               </td>
 
                               <td>

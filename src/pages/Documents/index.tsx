@@ -19,7 +19,7 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Formik } from "formik";
 import * as yup from "yup";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 
 import api from "../../services/api";
 
@@ -82,7 +82,6 @@ export function Documents() {
     setLoadingScreen(true);
     const loadDataDocuments = async () => {
       const { data } = await api.get("/documentos");
-      console.log(data);
       data.sort((itemA: any, itemB: any) => itemA.id - itemB.id);
       setDataDocuments(data);
     };
@@ -256,8 +255,6 @@ export function Documents() {
         setLoadingModal(false);
       });
 
-    console.log(data);
-
     return data;
   };
 
@@ -411,7 +408,10 @@ export function Documents() {
                                   : "Documento não encontrado"}
                               </td>
                               <td>
-                                {format(new Date(item.dataHora), "dd/MM/yyyy")}
+                                {format(
+                                  parseISO(String(item.dataHora)),
+                                  "dd/MM/yyyy"
+                                )}
                               </td>
 
                               <td>
