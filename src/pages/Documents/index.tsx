@@ -2,7 +2,10 @@ import { useEffect, useState } from "react";
 import {
   Button,
   Col,
+  Dropdown,
+  DropdownButton,
   Form,
+  InputGroup,
   Modal,
   Spinner,
   Table,
@@ -14,6 +17,7 @@ import {
   faDownload,
   faEdit,
   faPlus,
+  faSearch,
   faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -63,8 +67,10 @@ export function Documents() {
   const [item, setItem] = useState({} as dataType);
   const [toastShow, setToastShow] = useState(false);
   const [toastText, setToastText] = useState<string[]>([]);
-  const [dataDocuments, setDataDocuments] = useState([]);
+  const [dataDocuments, setDataDocuments] = useState<dataType[]>([]);
   const [dataDocumentationTypes, setDataDocumentationTypes] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filtered, setFiltered] = useState<dataType[]>([]);
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -73,7 +79,7 @@ export function Documents() {
   // Pagination - Get Current Posts
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = dataDocuments.slice(indexOfFirstItem, indexOfLastItem);
+  const currentItems = filtered.slice(indexOfFirstItem, indexOfLastItem);
 
   // Pagination - change page
   const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
@@ -84,6 +90,8 @@ export function Documents() {
       const { data } = await api.get("/documentos");
       data.sort((itemA: any, itemB: any) => itemA.id - itemB.id);
       setDataDocuments(data);
+
+      setFiltered(data);
     };
 
     const loadDataDocumentationTypes = async () => {
@@ -99,6 +107,21 @@ export function Documents() {
     }, 500);
   }, []);
 
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    event.preventDefault();
+    if (event.target.value === "") {
+      setFiltered(dataDocuments);
+    }
+    setSearchTerm(event.target.value);
+  };
+
+  const handleSearch = () => {
+    const filteredItems = dataDocuments.filter((item) =>
+      item.nomeDocumento.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setFiltered(filteredItems);
+  };
+
   const handleDelete = async (id: number) => {
     setLoadingScreen(true);
     await api
@@ -113,6 +136,7 @@ export function Documents() {
         setToastShow(true);
         const { data } = await api.get("/documentos");
         setDataDocuments(data);
+        setFiltered(data);
       })
       .catch((err) => {
         setToastText([
@@ -158,6 +182,7 @@ export function Documents() {
         const { data } = await api.get("/documentos");
         data.sort((itemA: any, itemB: any) => itemA.id - itemB.id);
         setDataDocuments(data);
+        setFiltered(data);
       })
       .catch((err) => {
         setToastText([
@@ -212,6 +237,7 @@ export function Documents() {
         data.sort((itemA: any, itemB: any) => itemA.id - itemB.id);
 
         setDataDocuments(data);
+        setFiltered(data);
       })
       .catch((err) => {
         setToastText([
@@ -267,7 +293,7 @@ export function Documents() {
       .test("fileSize", "O arquivo é muito grande", (value) => {
         if (value) {
           // @ts-ignore
-          return value[0].size <= 5242880;
+          return value[0].size <= 1048576;
         }
         return true;
       })
@@ -320,7 +346,25 @@ export function Documents() {
           <h1>
             <span className="poppins-bold">Documentos</span>
           </h1>
-          <div>
+          <div className="d-flex align-items-center">
+            {dataDocuments.length > 0 && (
+              <div>
+                <Form className="d-flex">
+                  <InputGroup style={{ width: "20rem" }}>
+                    <Form.Control
+                      type="text"
+                      placeholder="Digite para buscar..."
+                      value={searchTerm}
+                      onChange={handleSearchChange}
+                    />
+
+                    <Button variant="primary" onClick={handleSearch}>
+                      <FontAwesomeIcon icon={faSearch} />
+                    </Button>
+                  </InputGroup>
+                </Form>
+              </div>
+            )}
             <Link to="/expirados">
               <Button
                 className="justify-content-center align-items-center"
@@ -328,6 +372,7 @@ export function Documents() {
                   fontSize: "1.2rem",
                   border: "none",
                   background: "var(--red)",
+                  marginLeft: "1rem",
                 }}
               >
                 <FontAwesomeIcon icon={faClockRotateLeft} />
