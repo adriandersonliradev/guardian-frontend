@@ -42,6 +42,9 @@ export interface dataDocumetationType {
 }
 
 export function DocumentTypes() {
+  const isAdminLoggedIn = Boolean(localStorage.getItem("admin"));
+  console.log(isAdminLoggedIn);
+
   const [loadingScreen, setLoadingScreen] = useState(false);
   const [loadingButton, setLoadingButton] = useState(false);
 
@@ -254,14 +257,16 @@ export function DocumentTypes() {
               Tipos Documentais
             </span>
           </h1>
-          <Button
-            data-testid="button-add"
-            onClick={() => setFormModalShow(true)}
-            className="button-home justify-content-center align-items-center"
-            style={{ fontSize: "1.2rem" }}
-          >
-            <FontAwesomeIcon icon={faPlus} />
-          </Button>
+          {isAdminLoggedIn && (
+            <Button
+              data-testid="button-add"
+              onClick={() => setFormModalShow(true)}
+              className="button-home justify-content-center align-items-center"
+              style={{ fontSize: "1.2rem" }}
+            >
+              <FontAwesomeIcon icon={faPlus} />
+            </Button>
+          )}
         </div>
         {loadingScreen ? (
           <div
@@ -298,7 +303,7 @@ export function DocumentTypes() {
                           <th>Lei Regulamentadora</th>
                           <th>Tempo de Vigência</th>
                           <th>Status</th>
-                          <th>Ações</th>
+                          {isAdminLoggedIn && <th>Ações</th>}
                         </tr>
                       </thead>
                       <tbody>
@@ -318,28 +323,32 @@ export function DocumentTypes() {
                               )}
                             </td>
                             <td>
-                              <Button
-                                key={`edit-${item.id}`}
-                                onClick={() => {
-                                  setFormEditModalShow(true);
-                                  setItem(item);
-                                }}
-                                className="button button-edit justify-content-center align-items-center"
-                                style={{ fontSize: "1.2rem" }}
-                              >
-                                <FontAwesomeIcon icon={faEdit} />
-                              </Button>
-                              <Button
-                                key={`delete-${item.id}`}
-                                onClick={() => {
-                                  setModalShow(true);
-                                  setItem(item);
-                                }}
-                                className="button button-trash justify-content-center align-items-center"
-                                style={{ fontSize: "1.2rem" }}
-                              >
-                                <FontAwesomeIcon icon={faTrash} />
-                              </Button>
+                              {isAdminLoggedIn && (
+                                <>
+                                  <Button
+                                    key={`edit-${item.id}`}
+                                    onClick={() => {
+                                      setFormEditModalShow(true);
+                                      setItem(item);
+                                    }}
+                                    className="button button-edit justify-content-center align-items-center"
+                                    style={{ fontSize: "1.2rem" }}
+                                  >
+                                    <FontAwesomeIcon icon={faEdit} />
+                                  </Button>
+                                  <Button
+                                    key={`delete-${item.id}`}
+                                    onClick={() => {
+                                      setModalShow(true);
+                                      setItem(item);
+                                    }}
+                                    className="button button-trash justify-content-center align-items-center"
+                                    style={{ fontSize: "1.2rem" }}
+                                  >
+                                    <FontAwesomeIcon icon={faTrash} />
+                                  </Button>
+                                </>
+                              )}
                             </td>
                           </tr>
                         ))}

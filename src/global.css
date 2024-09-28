@@ -204,6 +204,7 @@ ul {
 
 .button-home {
   background-color: var(--purple) !important;
+  border-color: var(--purple) !important;
 }
 
 .button-home-register {
