@@ -2,6 +2,7 @@ import { Button } from "react-bootstrap";
 import { NavBar } from "../../components/index";
 
 import guardiaoDeDocumentos from "../../assets/guardiaoDeDocumentos.png";
+import { Link } from "react-router-dom";
 
 export function Home() {
   return (
@@ -24,12 +25,22 @@ export function Home() {
             importantes com sua própria tabela de temporalidade
           </span>
 
-          <Button
-            className="button-home"
-            style={{ width: "15rem", marginTop: "2rem" }}
-          >
-            Registre-se agora
-          </Button>
+          <div style={{ display: "flex", marginTop: "2rem" }}>
+            <Button
+              className="button-home"
+              style={{ width: "9rem", marginRight: "1rem" }}
+            >
+              Entrar
+            </Button>
+            <Button className="button-home-register" style={{ width: "12rem" }}>
+              <Link
+                to="/cadastro"
+                style={{ color: "var(--purple) !important" }}
+              >
+                Cadastre agora
+              </Link>
+            </Button>
+          </div>
         </div>
 
         <img

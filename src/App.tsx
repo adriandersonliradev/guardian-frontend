@@ -5,6 +5,7 @@ import { Home } from "./pages/Home";
 import { DocumentTypes } from "./pages/DocumentTypes";
 import { Documents } from "./pages/Documents";
 import { Expired } from "./pages/Expired";
+import { Register } from "./pages/Register";
 
 export function App() {
   return (
@@ -14,6 +15,7 @@ export function App() {
         <Route path="/tipos-documentais" element={<DocumentTypes />} />
         <Route path="/documentos" element={<Documents />} />
         <Route path="/expirados" element={<Expired />} />
+        <Route path="/cadastro" element={<Register />} />
       </Routes>
     </div>
   );

@@ -206,6 +206,11 @@ ul {
   background-color: var(--purple) !important;
 }
 
+.button-home-register {
+  border-color: var(--purple) !important;
+  background-color: transparent !important;
+}
+
 /* Document Types */
 
 .button {
