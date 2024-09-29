@@ -24,6 +24,7 @@ import {
 
 import * as yup from "yup";
 import api from "../../services/api";
+import { useAuth } from "../../context/AuthContext";
 
 interface FormData {
   email: string;
@@ -32,8 +33,9 @@ interface FormData {
 
 export function Home() {
   const navigate = useNavigate();
-  const isLoggedIn = localStorage.getItem("email") ? true : false;
-  const isAdminLoggedIn = Boolean(localStorage.getItem("admin"));
+
+  const { user, login, isLoggedIn } = useAuth();
+
   const [showLogin, setShowLogin] = useState(false);
   const [loadingButton, setLoadingButton] = useState(false);
 
@@ -51,6 +53,7 @@ export function Home() {
   });
 
   const handleSubmit = async (values: FormData) => {
+    setLoadingButton(true);
     try {
       const response = await api.post("usuarios/login", null, {
         params: {
@@ -58,10 +61,7 @@ export function Home() {
           senha: values.password,
         },
       });
-
-      localStorage.setItem("name", response.data.nome);
-      localStorage.setItem("email", response.data.email);
-      localStorage.setItem("admin", response.data.admin);
+      login(response.data);
 
       setToastText(["success", "O Guardiao", "Login realizado com sucesso!"]);
       setToastShow(true);
@@ -71,7 +71,8 @@ export function Home() {
       setShowLogin(false);
       navigate("/documentos");
     } catch (error: any) {
-      setToastText(["danger", "Erro", error.response.data.message]);
+      setLoadingButton(false);
+      setToastText(["danger", "Erro", error.response.data]);
       setToastShow(true);
     }
   };
@@ -146,10 +147,7 @@ export function Home() {
               >
                 <Formik
                   validationSchema={schema}
-                  onSubmit={(values, { resetForm }) => {
-                    handleSubmit(values);
-                    resetForm();
-                  }}
+                  onSubmit={handleSubmit}
                   initialValues={{
                     email: "",
                     password: "",
@@ -258,7 +256,7 @@ export function Home() {
                     Entrar
                   </Button>
                 )}
-                {isLoggedIn && isAdminLoggedIn && (
+                {user?.admin && (
                   <Button
                     className="button-home-register"
                     style={{ width: "15rem", height: "2.5rem" }}
@@ -267,7 +265,7 @@ export function Home() {
                       to="/cadastro"
                       style={{ color: "var(--purple) !important" }}
                     >
-                      Cadastre agora
+                      Cadastrar usuário
                     </Link>
                   </Button>
                 )}

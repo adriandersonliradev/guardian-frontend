@@ -29,7 +29,7 @@ import { NavBar } from "../../components";
 import Logo from "../../assets/logo.png";
 import { dataDocumetationType } from "../DocumentTypes";
 import { ModalComponent } from "../../components/Modal";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Pagination } from "../../components/Pagination";
 
 interface FormDataDocuments {
@@ -54,6 +54,7 @@ export interface dataType {
 }
 
 export function Documents() {
+  const navigate = useNavigate();
   const [loadingScreen, setLoadingScreen] = useState(false);
   const [loadingModal, setLoadingModal] = useState(false);
   const [loadingButton, setLoadingButton] = useState(false);
@@ -363,22 +364,23 @@ export function Documents() {
                 </Form>
               </div>
             )}
-            <Link to="/expirados">
-              <Button
-                className="justify-content-center align-items-center"
-                style={{
-                  fontSize: "1.2rem",
-                  border: "none",
-                  background: "var(--red)",
-                  marginLeft: "1rem",
-                }}
-              >
-                <FontAwesomeIcon icon={faClockRotateLeft} />
-                <span style={{ marginLeft: "0.5rem", fontSize: "1rem" }}>
-                  {"Expirados"}
-                </span>
-              </Button>
-            </Link>
+            <Button
+              className="justify-content-center align-items-center"
+              style={{
+                fontSize: "1.2rem",
+                border: "none",
+                background: "var(--red)",
+                marginLeft: "1rem",
+              }}
+              onClick={() => {
+                navigate("/expirados");
+              }}
+            >
+              <FontAwesomeIcon icon={faClockRotateLeft} />
+              <span style={{ marginLeft: "0.5rem", fontSize: "1rem" }}>
+                {"Expirados"}
+              </span>
+            </Button>
             <Button
               onClick={() => setFormModalShow(true)}
               className="button-home justify-content-center align-items-center"

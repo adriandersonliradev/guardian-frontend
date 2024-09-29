@@ -22,6 +22,7 @@ import { NavBar } from "../../components";
 import Logo from "../../assets/logo.png";
 import { ModalComponent } from "../../components/Modal";
 import { Pagination } from "../../components/Pagination";
+import { useAuth } from "../../context/AuthContext";
 
 interface FormDataDocumentTypes {
   description: string;
@@ -42,9 +43,7 @@ export interface dataDocumetationType {
 }
 
 export function DocumentTypes() {
-  const isAdminLoggedIn = Boolean(localStorage.getItem("admin"));
-  console.log(isAdminLoggedIn);
-
+  const { user } = useAuth();
   const [loadingScreen, setLoadingScreen] = useState(false);
   const [loadingButton, setLoadingButton] = useState(false);
 
@@ -257,7 +256,7 @@ export function DocumentTypes() {
               Tipos Documentais
             </span>
           </h1>
-          {isAdminLoggedIn && (
+          {user?.admin && (
             <Button
               data-testid="button-add"
               onClick={() => setFormModalShow(true)}
@@ -303,7 +302,7 @@ export function DocumentTypes() {
                           <th>Lei Regulamentadora</th>
                           <th>Tempo de Vigência</th>
                           <th>Status</th>
-                          {isAdminLoggedIn && <th>Ações</th>}
+                          {user?.admin && <th>Ações</th>}
                         </tr>
                       </thead>
                       <tbody>
@@ -323,7 +322,7 @@ export function DocumentTypes() {
                               )}
                             </td>
                             <td>
-                              {isAdminLoggedIn && (
+                              {user?.admin && (
                                 <>
                                   <Button
                                     key={`edit-${item.id}`}

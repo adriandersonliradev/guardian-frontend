@@ -18,9 +18,10 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronLeft, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { Pagination } from "../../components/Pagination";
 import { ModalComponent } from "../../components/Modal";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 export function Expired() {
+  const navigate = useNavigate();
   const [loadingScreen, setLoadingScreen] = useState(false);
   const [dataDocumentsExpired, setDataDocumentsExpired] = useState([]);
   const [dataDocumentationTypes, setDataDocumentationTypes] = useState([]);
@@ -201,20 +202,19 @@ export function Expired() {
                 </span>
               </Button>
             )}
-            <Link to="/documentos">
-              <Button
-                className="button-home justify-content-center align-items-center"
-                style={{
-                  fontSize: "1.2rem",
-                  border: "none",
-                  marginLeft: "1rem",
-                  background: "var(--purple)",
-                  width: "2.5rem",
-                }}
-              >
-                <FontAwesomeIcon icon={faChevronLeft} />
-              </Button>
-            </Link>
+            <Button
+              className="button-home justify-content-center align-items-center"
+              style={{
+                fontSize: "1.2rem",
+                border: "none",
+                marginLeft: "1rem",
+                background: "var(--purple)",
+                width: "2.5rem",
+              }}
+              onClick={() => navigate("/documentos")}
+            >
+              <FontAwesomeIcon icon={faChevronLeft} />
+            </Button>
           </div>
         </div>
 

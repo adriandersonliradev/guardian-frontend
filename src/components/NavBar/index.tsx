@@ -5,12 +5,12 @@ import Navbar from "react-bootstrap/Navbar";
 import Logo from "../../assets/logo.png";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSignOut } from "@fortawesome/free-solid-svg-icons";
+import { useAuth } from "../../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 function NavBar() {
-  const isLoggedIn = localStorage.getItem("email") ? true : false;
-  const isAdminLoggedIn = Boolean(localStorage.getItem("admin"));
-  console.log(isAdminLoggedIn);
-  console.log(typeof isAdminLoggedIn);
+  const { isLoggedIn, user, logout } = useAuth();
+  const navegate = useNavigate();
 
   return (
     <Navbar collapseOnSelect expand="lg" className="nav">
@@ -33,13 +33,19 @@ function NavBar() {
           <Nav style={{ display: "flex", alignItems: "center" }}>
             {isLoggedIn && (
               <>
-                <Nav.Link href="documentos">Documentos</Nav.Link>
-                <Nav.Link href="tipos-documentais">Tipos Documentais</Nav.Link>
-                {isAdminLoggedIn && (
-                  <Nav.Link href="cadastro">Cadastrar usuário</Nav.Link>
+                <Nav.Link onClick={() => navegate("/documentos")}>
+                  Documentos
+                </Nav.Link>
+                <Nav.Link onClick={() => navegate("/tipos-documentais")}>
+                  Tipos Documentais
+                </Nav.Link>
+                {user?.admin && (
+                  <Nav.Link onClick={() => navegate("/cadastro")}>
+                    Cadastrar usuário
+                  </Nav.Link>
                 )}
                 <Nav.Link style={{ marginLeft: "3rem" }}>
-                  Olá, {localStorage.getItem("name")}
+                  Olá, {user?.name}
                 </Nav.Link>
                 <Nav.Link
                   style={{
@@ -54,7 +60,7 @@ function NavBar() {
                     justifyContent: "center",
                   }}
                   onClick={() => {
-                    localStorage.clear();
+                    logout();
                     window.location.href = "/";
                   }}
                 >
