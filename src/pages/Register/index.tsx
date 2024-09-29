@@ -32,9 +32,6 @@ interface FormDataDocuments {
 }
 
 export function Register() {
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const [showScrollMessage, setShowScrollMessage] = useState(true);
-
   const [loadingButton, setLoadingButton] = useState(false);
 
   const [toastShow, setToastShow] = useState(false);
@@ -42,30 +39,6 @@ export function Register() {
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
-  useEffect(() => {
-    const container = scrollContainerRef.current;
-    if (container) {
-      // Adiciona o evento de scroll
-      container.addEventListener("scroll", handleScroll);
-      return () => {
-        // Remove o evento quando o componente for desmontado
-        container.removeEventListener("scroll", handleScroll);
-      };
-    }
-  }, []);
-
-  const handleScroll = () => {
-    const container = scrollContainerRef.current;
-    if (container) {
-      // Verifica se o usuário rolou até o final
-      const isAtBottom =
-        container.scrollHeight - container.scrollTop <=
-        container.clientHeight + 1;
-
-      setShowScrollMessage(!isAtBottom);
-    }
-  };
 
   const handleSubmit = async (values: FormDataDocuments) => {
     setLoadingButton(true);
@@ -144,29 +117,23 @@ export function Register() {
       <div
         style={{
           display: "flex",
-          justifyContent: "space-around",
-          height: "85vh",
+          justifyContent: "center",
           alignItems: "center",
-          position: "relative",
+          height: "80vh",
+          width: "100%",
         }}
       >
         <div
-          ref={scrollContainerRef}
           style={{
             display: "flex",
             flexDirection: "column",
-            width: "25%",
-            maxHeight: "50vh",
-            overflowY: "auto",
-            paddingRight: "1rem",
-            paddingLeft: "1rem",
           }}
         >
           <h2>
             <span className="poppins-bold">Criar conta</span>
           </h2>
           <span className="poppins-light" style={{ marginTop: ".5rem" }}>
-            Crie sua conta para ter acesso a todos os recursos do Guardião de
+            Crie a conta para ter acesso a todos os recursos do Guardião de
             Documentos
           </span>
 
@@ -193,148 +160,159 @@ export function Register() {
               errors,
             }) => (
               <Form noValidate onSubmit={handleSubmit}>
-                <Form.Group as={Col} className="mt-4 mb-3" controlId="name">
-                  <Form.Label>Nome do usuário</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="name"
-                    autoFocus
-                    value={values.name}
-                    onChange={handleChange}
-                    isInvalid={touched.name && !!errors.name}
-                  />
-                  <Form.Control.Feedback type="invalid">
-                    {errors.name}
-                  </Form.Control.Feedback>
-                </Form.Group>
-
-                <Form.Group as={Col} className="mb-3" controlId="email">
-                  <Form.Label>Email</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="email"
-                    value={values.email}
-                    onChange={handleChange}
-                    isInvalid={touched.email && !!errors.email}
-                  />
-                  <Form.Control.Feedback type="invalid">
-                    {errors.email}
-                  </Form.Control.Feedback>
-                </Form.Group>
-
-                <Form.Group as={Col} className="mb-3" controlId="password">
-                  <Form.Label>Senha</Form.Label>
-                  <InputGroup>
-                    <Form.Control
-                      type={showPassword ? "text" : "password"}
-                      name="password"
-                      value={values.password}
-                      onChange={handleChange}
-                      isInvalid={touched.password && !!errors.password}
-                    />
-                    <Button
-                      variant="outline-secondary"
-                      id="button-visible-1"
-                      style={{ borderRadius: "0 0.25rem 0.25rem 0" }}
-                      onClick={() => setShowPassword(!showPassword)}
-                    >
-                      <FontAwesomeIcon
-                        icon={showPassword ? faEyeSlash : faEye}
-                      />
-                    </Button>
-                    <Form.Control.Feedback type="invalid">
-                      {errors.password}
-                    </Form.Control.Feedback>
-                  </InputGroup>
-                </Form.Group>
-
-                <Form.Group
-                  as={Col}
-                  className="mb-3"
-                  controlId="confirmPassword"
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    marginTop: "2rem",
+                    gap: "2rem",
+                  }}
                 >
-                  <Form.Label>Confirmar senha</Form.Label>
-                  <InputGroup>
+                  <Form.Group as={Col} className="mb-3" controlId="name">
+                    <Form.Label>Nome do usuário</Form.Label>
                     <Form.Control
-                      type={showConfirmPassword ? "text" : "password"}
-                      name="confirmPassword"
-                      value={values.confirmPassword}
+                      type="text"
+                      name="name"
+                      autoFocus
+                      value={values.name}
                       onChange={handleChange}
-                      isInvalid={
-                        touched.confirmPassword && !!errors.confirmPassword
-                      }
+                      isInvalid={touched.name && !!errors.name}
                     />
-                    <Button
-                      variant="outline-secondary"
-                      id="button-visible-2"
-                      style={{ borderRadius: "0 0.25rem 0.25rem 0" }}
-                      onClick={() =>
-                        setShowConfirmPassword(!showConfirmPassword)
-                      }
-                    >
-                      <FontAwesomeIcon
-                        icon={showConfirmPassword ? faEyeSlash : faEye}
-                      />
-                    </Button>
                     <Form.Control.Feedback type="invalid">
-                      {errors.confirmPassword}
+                      {errors.name}
                     </Form.Control.Feedback>
-                  </InputGroup>
-                </Form.Group>
+                  </Form.Group>
 
-                <Form.Group controlId="formSwitch" className="mb-3">
-                  <Form.Check
-                    name="autoClassification"
-                    checked={values.admin}
-                    onChange={(event) => {
-                      setFieldValue("admin", event.currentTarget.checked);
-                    }}
-                    type="switch"
-                    id="form-switch"
-                    label="É administrador?"
-                  />
-                </Form.Group>
-
-                <Button type="submit" disabled={loadingButton}>
-                  {loadingButton && (
-                    <Spinner
-                      as="span"
-                      animation="border"
-                      size="sm"
-                      role="status"
-                      aria-hidden="true"
+                  <Form.Group as={Col} className="mb-3" controlId="email">
+                    <Form.Label>Email</Form.Label>
+                    <Form.Control
+                      type="text"
+                      name="email"
+                      value={values.email}
+                      onChange={handleChange}
+                      isInvalid={touched.email && !!errors.email}
                     />
-                  )}{" "}
-                  Enviar
-                </Button>
+                    <Form.Control.Feedback type="invalid">
+                      {errors.email}
+                    </Form.Control.Feedback>
+                  </Form.Group>
+                </div>
+
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    gap: "2rem",
+                  }}
+                >
+                  <Form.Group as={Col} className="mb-3" controlId="password">
+                    <Form.Label>Senha</Form.Label>
+                    <InputGroup>
+                      <Form.Control
+                        type={showPassword ? "text" : "password"}
+                        name="password"
+                        value={values.password}
+                        onChange={handleChange}
+                        isInvalid={touched.password && !!errors.password}
+                      />
+                      <Button
+                        variant="outline-secondary"
+                        id="button-visible-1"
+                        style={{ borderRadius: "0 0.25rem 0.25rem 0" }}
+                        onClick={() => setShowPassword(!showPassword)}
+                      >
+                        <FontAwesomeIcon
+                          icon={showPassword ? faEyeSlash : faEye}
+                        />
+                      </Button>
+                      <Form.Control.Feedback type="invalid">
+                        {errors.password}
+                      </Form.Control.Feedback>
+                    </InputGroup>
+                  </Form.Group>
+
+                  <Form.Group
+                    as={Col}
+                    className="mb-3"
+                    controlId="confirmPassword"
+                  >
+                    <Form.Label>Confirmar senha</Form.Label>
+                    <InputGroup>
+                      <Form.Control
+                        type={showConfirmPassword ? "text" : "password"}
+                        name="confirmPassword"
+                        value={values.confirmPassword}
+                        onChange={handleChange}
+                        isInvalid={
+                          touched.confirmPassword && !!errors.confirmPassword
+                        }
+                      />
+                      <Button
+                        variant="outline-secondary"
+                        id="button-visible-2"
+                        style={{ borderRadius: "0 0.25rem 0.25rem 0" }}
+                        onClick={() =>
+                          setShowConfirmPassword(!showConfirmPassword)
+                        }
+                      >
+                        <FontAwesomeIcon
+                          icon={showConfirmPassword ? faEyeSlash : faEye}
+                        />
+                      </Button>
+                      <Form.Control.Feedback type="invalid">
+                        {errors.confirmPassword}
+                      </Form.Control.Feedback>
+                    </InputGroup>
+                  </Form.Group>
+                </div>
+
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "flex-end",
+                  }}
+                >
+                  <Form.Group controlId="formSwitch">
+                    <Form.Check
+                      name="autoClassification"
+                      checked={values.admin}
+                      onChange={(event) => {
+                        setFieldValue("admin", event.currentTarget.checked);
+                      }}
+                      type="switch"
+                      id="form-switch"
+                      label="É administrador?"
+                    />
+                  </Form.Group>
+
+                  <Button
+                    style={{
+                      borderColor: "var(--purple)",
+                      backgroundColor: "var(--purple)",
+                      marginTop: "1rem",
+                    }}
+                    type="submit"
+                    disabled={loadingButton}
+                  >
+                    {loadingButton && (
+                      <Spinner
+                        as="span"
+                        animation="border"
+                        size="sm"
+                        role="status"
+                        aria-hidden="true"
+                      />
+                    )}{" "}
+                    Enviar
+                  </Button>
+                </div>
               </Form>
             )}
           </Formik>
-          {showScrollMessage && (
-            <div
-              style={{
-                position: "absolute",
-                bottom: "7rem",
-                width: "24%",
-                textAlign: "center",
-                background:
-                  "linear-gradient(to top, var(--purple), rgba(255, 255, 255, 0.9))",
-                padding: "8px",
-                color: "#fff",
-                borderBottomLeftRadius: "0.5rem",
-                borderBottomRightRadius: "0.5rem",
-              }}
-            >
-              <FontAwesomeIcon icon={faArrowDown} />
-            </div>
-          )}
         </div>
-
-        <img
-          src={guardiaoDeDocumentos}
-          width={"30%"}
-          alt="Guardiao de Documentos"
-        />
       </div>
     </>
   );
