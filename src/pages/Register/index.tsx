@@ -11,17 +11,12 @@ import { NavBar } from "../../components/index";
 
 import Logo from "../../assets/logo.png";
 
-import guardiaoDeDocumentos from "../../assets/guardiaoDeDocumentos.png";
 import { Formik } from "formik";
 import * as yup from "yup";
 import api from "../../services/api";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useEffect, useRef, useState } from "react";
-import {
-  faArrowDown,
-  faEye,
-  faEyeSlash,
-} from "@fortawesome/free-solid-svg-icons";
+import { useState } from "react";
+import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 
 interface FormDataDocuments {
   name: string;

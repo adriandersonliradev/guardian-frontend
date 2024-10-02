@@ -2,6 +2,7 @@
 import { createContext, useState, ReactNode, useContext } from "react";
 
 interface User {
+  id: number;
   name: string;
   email: string;
   admin: boolean;
@@ -9,7 +10,12 @@ interface User {
 
 interface AuthContextType {
   user: User | null;
-  login: (user: { nome: string; email: string; admin: boolean }) => void;
+  login: (user: {
+    id: number;
+    nome: string;
+    email: string;
+    admin: boolean;
+  }) => void;
   logout: () => void;
   isLoggedIn: boolean;
 }
@@ -26,14 +32,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return savedUser ? true : false;
   });
 
-  const login = (user: { nome: string; email: string; admin: boolean }) => {
-    const { nome, email, admin } = user;
+  const login = (user: {
+    id: number;
+    nome: string;
+    email: string;
+    admin: boolean;
+  }) => {
+    const { id, nome, email, admin } = user;
     setUser(() => {
       localStorage.setItem(
         "user",
-        JSON.stringify({ name: nome, email, admin })
+        JSON.stringify({ id, name: nome, email, admin })
       );
-      return { name: nome, email, admin };
+      return { id, name: nome, email, admin };
     });
     setIsLoggedIn(user.email !== undefined || user.email !== "");
   };

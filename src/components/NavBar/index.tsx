@@ -30,7 +30,7 @@ function NavBar() {
           id="responsive-navbar-nav"
           className="justify-content-end"
         >
-          <Nav style={{ display: "flex", alignItems: "center" }}>
+          <Nav style={{ display: "flex" }}>
             {isLoggedIn && (
               <>
                 <Nav.Link onClick={() => navegate("/documentos")}>
@@ -40,36 +40,40 @@ function NavBar() {
                   Tipos Documentais
                 </Nav.Link>
                 {user?.admin && (
-                  <Nav.Link onClick={() => navegate("/cadastro")}>
+                  <Nav.Link
+                    onClick={() => navegate("/cadastro")}
+                    style={{ marginRight: "3rem" }}
+                  >
                     Cadastrar usuário
                   </Nav.Link>
                 )}
-                <Nav.Link style={{ marginLeft: "3rem" }}>
-                  Olá, {user?.name}
-                </Nav.Link>
-                <Nav.Link
-                  style={{
-                    cursor: "pointer",
-                    padding: "0 1rem",
-                    width: "5.4rem",
-                    height: "2rem",
-                    backgroundColor: "var(--red)",
-                    borderRadius: "0.5rem",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                  onClick={() => {
-                    logout();
-                    window.location.href = "/";
-                  }}
-                >
-                  Sair
-                  <FontAwesomeIcon
-                    icon={faSignOut}
-                    style={{ marginLeft: "0.5rem" }}
-                  />
-                </Nav.Link>
+                <div style={{ display: "flex", alignItems: "center" }}>
+                  <Nav.Link>Olá, {user?.name}</Nav.Link>
+                  <Nav.Link
+                    style={{
+                      cursor: "pointer",
+                      padding: "0 1rem",
+                      width: "5.4rem",
+                      height: "2rem",
+                      backgroundColor: "var(--red)",
+                      borderRadius: "0.5rem",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      marginLeft: "1rem",
+                    }}
+                    onClick={() => {
+                      logout();
+                      window.location.href = "/";
+                    }}
+                  >
+                    Sair
+                    <FontAwesomeIcon
+                      icon={faSignOut}
+                      style={{ marginLeft: "0.5rem" }}
+                    />
+                  </Nav.Link>
+                </div>
               </>
             )}
           </Nav>

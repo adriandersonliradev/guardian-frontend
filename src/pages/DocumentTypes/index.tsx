@@ -142,7 +142,7 @@ export function DocumentTypes() {
     };
 
     await api
-      .post(`/tiposdocumentais/1`, data)
+      .post(`/tiposdocumentais/${user?.id}`, data)
       .then(async () => {
         setToastText([
           "success",
@@ -182,7 +182,7 @@ export function DocumentTypes() {
     };
 
     await api
-      .post(`/tiposdocumentais/1`, data)
+      .post(`/tiposdocumentais/${user?.id}`, data)
       .then(async () => {
         setToastText([
           "success",
